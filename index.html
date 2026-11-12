@@ -2,117 +2,259 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#087a45">
-<title>BidWorld - Premium Auction Platform</title>
-
+<title>BidWorld</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Arial,sans-serif;background:#f6f9f7;color:#17251e}
-header{background:white;padding:17px 6%;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 12px #0000000b}
-.logo{font-size:25px;font-weight:800;color:#087a45}
-nav a{margin-left:18px;text-decoration:none;color:#34463c;font-weight:600}
-button{background:#087a45;color:white;border:0;padding:12px 20px;border-radius:8px;font-weight:bold;cursor:pointer}
-.hero{text-align:center;padding:75px 18px;background:linear-gradient(135deg,#e6f7ed,#ffffff)}
-.hero h1{font-size:42px;margin-bottom:18px}
-.hero h1 span{color:#087a45}
-.hero p{color:#64746a;font-size:17px;line-height:1.7;max-width:600px;margin:0 auto 25px}
-.section{padding:45px 6%}
-.section h2{text-align:center;margin-bottom:25px;font-size:27px}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
-.card{background:white;padding:25px;border-radius:14px;box-shadow:0 4px 18px #0000000a}
-.card h3{color:#087a45;margin-bottom:12px}
-.card p{color:#68766d;line-height:1.6}
-.auth{max-width:440px;margin:30px auto;background:white;padding:25px;border-radius:14px;box-shadow:0 4px 20px #00000012}
-.auth h2{margin-bottom:18px;color:#087a45}
-.auth input{width:100%;padding:13px;margin:8px 0;border:1px solid #d8e2dc;border-radius:8px;font-size:15px}
-.auth button{width:100%;margin-top:12px}
-.auth a{color:#087a45;cursor:pointer}
-.hidden{display:none}
-.notice{font-size:13px;color:#68766d;margin-top:12px;line-height:1.5}
-footer{text-align:center;padding:25px;background:#103b29;color:white;margin-top:35px}
-@media(max-width:600px){
-.hero h1{font-size:32px}
-nav a{margin-left:8px;font-size:13px}
-header{padding:15px 4%}
-}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f5f8f6;color:#20352a}
+header{background:white;padding:17px 6%;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 12px #0001}
+.logo{font-size:25px;font-weight:bold;color:#087a45}
+button{border:0;border-radius:8px;padding:13px 20px;background:#087a45;color:white;font-weight:bold;cursor:pointer}
+button.secondary{background:#e5f2e9;color:#087a45}
+main{max-width:850px;margin:auto;padding:25px 16px}
+.hero{text-align:center;padding:40px 15px;background:#e7f5eb;border-radius:16px;margin-bottom:25px}
+.hero h1{font-size:35px}
+.hero span{color:#087a45}
+.panel{background:white;padding:24px;border-radius:14px;margin:18px 0;box-shadow:0 3px 15px #0000000a}
+input{width:100%;padding:14px;margin:8px 0;border:1px solid #d5e0d9;border-radius:8px;font-size:16px}
+.form button{width:100%;margin-top:12px}
+.hidden{display:none!important}
+.muted{color:#718078;font-size:14px;line-height:1.5}
+a{color:#087a45;cursor:pointer}
+#message{padding:12px;border-radius:8px;margin:12px 0;display:none;line-height:1.5}
+footer{text-align:center;padding:25px;color:#718078}
 </style>
 </head>
-
 <body>
 
 <header>
-  <div class="logo">BidWorld</div>
-  <nav>
-    <a href="#home">Home</a>
-    <a href="#features">Features</a>
-    <button onclick="showAuth('login')">Login</button>
-  </nav>
+ <div class="logo">BidWorld</div>
+ <button id="headerBtn" onclick="showLogin()">Login</button>
 </header>
 
-<section class="hero" id="home">
-  <h1>Welcome to <span>BidWorld</span></h1>
-  <p>Discover exciting auctions, explore products and manage your membership through one secure platform.</p>
-  <button onclick="showAuth('register')">Create Free Account</button>
+<main>
+<section class="hero" id="welcome">
+ <h1>Welcome to <span>BidWorld</span></h1>
+ <p>Discover products, explore auctions and manage your membership.</p>
+ <button onclick="showRegister()">Create Free Account</button>
+ <button class="secondary" onclick="showLogin()">Member Login</button>
 </section>
 
-<section class="section" id="features">
-  <h2>Explore BidWorld</h2>
-  <div class="cards">
-    <div class="card">
-      <h3>Live Auctions</h3>
-      <p>Explore available products and participate in auctions.</p>
-    </div>
-    <div class="card">
-      <h3>Membership Packages</h3>
-      <p>Choose a membership package and track activation status.</p>
-    </div>
-    <div class="card">
-      <h3>Member Dashboard</h3>
-      <p>Manage your profile, wallet, referrals and bidding history.</p>
-    </div>
-    <div class="card">
-      <h3>Secure Platform</h3>
-      <p>Account access and payment verification through controlled processes.</p>
-    </div>
-  </div>
+<div id="message"></div>
+
+<section class="panel form hidden" id="register">
+ <h2>Create Your Account</h2>
+ <input id="regName" placeholder="Full Name" autocomplete="name">
+ <input id="regMobile" type="tel" placeholder="Mobile Number" autocomplete="tel">
+ <input id="regEmail" type="email" placeholder="Email Address" autocomplete="email">
+ <input id="regPassword" type="password" placeholder="Password" autocomplete="new-password">
+ <input id="regConfirm" type="password" placeholder="Confirm Password" autocomplete="new-password">
+ <button id="registerBtn" onclick="registerUser()">Register</button>
+ <p class="muted">Already registered? <a onclick="showLogin()">Login</a></p>
 </section>
 
-<div class="auth hidden" id="login">
-  <h2>Member Login</h2>
-  <input type="email" placeholder="Email Address">
-  <input type="password" placeholder="Password">
-  <button onclick="connectionMessage()">Login</button>
-  <p class="notice">New member? <a onclick="showAuth('register')">Create an account</a></p>
-</div>
+<section class="panel form hidden" id="login">
+ <h2>Member Login</h2>
+ <input id="loginEmail" type="email" placeholder="Email Address" autocomplete="email">
+ <input id="loginPassword" type="password" placeholder="Password" autocomplete="current-password">
+ <button id="loginBtn" onclick="loginUser()">Login</button>
+ <p class="muted"><a onclick="resetPassword()">Forgot Password?</a></p>
+ <p class="muted">New member? <a onclick="showRegister()">Create Account</a></p>
+</section>
 
-<div class="auth hidden" id="register">
-  <h2>Create Your Account</h2>
-  <input type="text" placeholder="Full Name">
-  <input type="tel" placeholder="Mobile Number">
-  <input type="email" placeholder="Email Address (Optional)">
-  <input type="text" placeholder="Sponsor Referral ID (Optional)">
-  <input type="password" placeholder="Password">
-  <input type="password" placeholder="Confirm Password">
-  <button onclick="connectionMessage()">Register</button>
-  <p class="notice">Already registered? <a onclick="showAuth('login')">Login</a></p>
-</div>
+<section class="panel hidden" id="dashboard">
+ <h2>Welcome, <span id="memberName">Member</span></h2>
+ <p id="memberEmail" class="muted"></p>
+ <p id="memberId" class="muted"></p>
+ <h3>Member Dashboard</h3>
+ <p>Your account is connected to BidWorld.</p>
+ <p class="muted">Membership, wallets, referrals and auctions will be connected in the next development stages.</p>
+ <button class="secondary" onclick="logoutUser()">Logout</button>
+</section>
+</main>
 
-<footer>
-  <p>© 2026 BidWorld. All Rights Reserved.</p>
-</footer>
+<footer>© 2026 BidWorld. All Rights Reserved.</footer>
 
 <script>
-function showAuth(type){
-  document.getElementById('login').classList.add('hidden');
-  document.getElementById('register').classList.add('hidden');
-  document.getElementById(type).classList.remove('hidden');
-  document.getElementById(type).scrollIntoView({behavior:'smooth'});
-}
-function connectionMessage(){
-  alert('Supabase authentication connection is pending. Registration and login are not active yet.');
-}
-</script>
+const SUPABASE_URL = 'https://mmdkehfsaupivxtkxmaf.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_KJHTu11C_Qas631_NY5JTA_OUn1Erx2';
 
+const db = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+const $ = id => document.getElementById(id);
+
+function message(text,isError=false){
+ const box=$('message');
+ box.textContent=text;
+ box.style.display='block';
+ box.style.background=isError?'#ffe8e8':'#e5f5e9';
+ box.style.color=isError?'#a00000':'#086b3b';
+}
+
+function hideForms(){
+ ['register','login','dashboard'].forEach(id=>$(id).classList.add('hidden'));
+}
+
+function showRegister(){
+ hideForms();
+ $('welcome').classList.add('hidden');
+ $('register').classList.remove('hidden');
+ $('message').style.display='none';
+}
+
+function showLogin(){
+ hideForms();
+ $('welcome').classList.add('hidden');
+ $('login').classList.remove('hidden');
+ $('message').style.display='none';
+}
+
+async function registerUser(){
+ const name=$('regName').value.trim();
+ const mobile=$('regMobile').value.trim();
+ const email=$('regEmail').value.trim();
+ const password=$('regPassword').value;
+ const confirm=$('regConfirm').value;
+
+ if(!name||!mobile||!email||!password){
+  return message('Please complete all required fields.',true);
+ }
+ if(!/^[0-9]{10,15}$/.test(mobile)){
+  return message('Enter a valid mobile number.',true);
+ }
+ if(password.length<8){
+  return message('Password must contain at least 8 characters.',true);
+ }
+ if(password!==confirm){
+  return message('Passwords do not match.',true);
+ }
+
+ const btn=$('registerBtn');
+ btn.disabled=true;
+ btn.textContent='Creating Account...';
+
+ try{
+  const {data,error}=await db.auth.signUp({
+   email,
+   password,
+   options:{
+    data:{
+     full_name:name,
+     mobile_number:mobile
+    }
+   }
+  });
+
+  if(error) throw error;
+
+  if(data.session){
+   message('Registration successful. Your account is active.');
+   await loadDashboard(data.session.user);
+  }else{
+   message('Registration submitted. Please check your email to confirm your account, then login.');
+   hideForms();
+   $('login').classList.remove('hidden');
+  }
+ }catch(e){
+  message(e.message||'Registration failed.',true);
+ }finally{
+  btn.disabled=false;
+  btn.textContent='Register';
+ }
+}
+
+async function loginUser(){
+ const email=$('loginEmail').value.trim();
+ const password=$('loginPassword').value;
+
+ if(!email||!password){
+  return message('Enter your email and password.',true);
+ }
+
+ const btn=$('loginBtn');
+ btn.disabled=true;
+ btn.textContent='Signing in...';
+
+ try{
+  const {data,error}=await db.auth.signInWithPassword({email,password});
+  if(error) throw error;
+  await loadDashboard(data.user);
+  message('Login successful.');
+ }catch(e){
+  message(e.message||'Login failed.',true);
+ }finally{
+  btn.disabled=false;
+  btn.textContent='Login';
+ }
+}
+
+async function loadDashboard(user){
+ hideForms();
+ $('welcome').classList.add('hidden');
+
+ const {data:profile,error}=await db
+  .from('profiles')
+  .select('member_id,full_name,email,account_status')
+  .eq('id',user.id)
+  .maybeSingle();
+
+ if(error){
+  message('Signed in, but profile could not be loaded: '+error.message,true);
+  return;
+ }
+
+ if(!profile){
+  message('Signed in. Your member profile is not available yet. Please contact support.',true);
+  return;
+ }
+
+ if(profile.account_status!=='active'){
+  await db.auth.signOut();
+  message('Your account is not active. Please contact support.',true);
+  return;
+ }
+
+ $('memberName').textContent=profile.full_name||'Member';
+ $('memberEmail').textContent=profile.email||user.email||'';
+ $('memberId').textContent='Member ID: '+(profile.member_id||'Pending');
+
+ $('dashboard').classList.remove('hidden');
+ $('headerBtn').textContent='Logout';
+ $('headerBtn').onclick=logoutUser;
+}
+
+async function logoutUser(){
+ await db.auth.signOut();
+ hideForms();
+ $('welcome').classList.remove('hidden');
+ $('headerBtn').textContent='Login';
+ $('headerBtn').onclick=showLogin;
+ message('You have logged out successfully.');
+}
+
+async function resetPassword(){
+ const email=$('loginEmail').value.trim();
+ if(!email)return message('Enter your email address first.',true);
+
+ const {error}=await db.auth.resetPasswordForEmail(email,{
+  redirectTo:location.origin
+ });
+ if(error)return message(error.message,true);
+ message('Password reset instructions sent to your email.');
+}
+
+db.auth.onAuthStateChange((event,session)=>{
+ if(event==='SIGNED_IN'&&session){
+  loadDashboard(session.user);
+ }
+});
+
+(async()=>{
+ const {data:{session}}=await db.auth.getSession();
+ if(session) await loadDashboard(session.user);
+})();
+</script>
 </body>
-                                                  </html>
+</html>
