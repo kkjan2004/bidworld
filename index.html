@@ -8,23 +8,30 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#f5f8f6;color:#20352a}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f8f5;color:#20352a}
 header{background:white;padding:17px 6%;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 12px #0001}
-.logo{font-size:25px;font-weight:bold;color:#087a45}
-button{border:0;border-radius:8px;padding:13px 20px;background:#087a45;color:white;font-weight:bold;cursor:pointer}
-button.secondary{background:#e5f2e9;color:#087a45}
-main{max-width:850px;margin:auto;padding:25px 16px}
-.hero{text-align:center;padding:40px 15px;background:#e7f5eb;border-radius:16px;margin-bottom:25px}
-.hero h1{font-size:35px}
+.logo{font-size:27px;font-weight:bold;color:#087a45}
+button{border:0;border-radius:9px;padding:14px 20px;background:#087a45;color:white;font-size:15px;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.6}
+.secondary{background:#e6f3e9;color:#087a45}
+main{max-width:900px;margin:auto;padding:28px 16px}
+.hero{text-align:center;padding:55px 15px;background:#e5f4e9;border-radius:17px;margin-bottom:25px}
+.hero h1{font-size:36px}
 .hero span{color:#087a45}
-.panel{background:white;padding:24px;border-radius:14px;margin:18px 0;box-shadow:0 3px 15px #0000000a}
-input{width:100%;padding:14px;margin:8px 0;border:1px solid #d5e0d9;border-radius:8px;font-size:16px}
+.hero p{line-height:1.7;color:#617268}
+.panel{background:white;padding:25px;border-radius:16px;margin:20px 0;box-shadow:0 4px 18px #0000000a}
+.panel h2{margin-top:0}
+input{width:100%;padding:15px;margin:8px 0;border:1px solid #d5e0d9;border-radius:9px;font-size:16px}
 .form button{width:100%;margin-top:12px}
 .hidden{display:none!important}
-.muted{color:#718078;font-size:14px;line-height:1.5}
+.muted{color:#718078;font-size:14px;line-height:1.6}
 a{color:#087a45;cursor:pointer}
-#message{padding:12px;border-radius:8px;margin:12px 0;display:none;line-height:1.5}
-footer{text-align:center;padding:25px;color:#718078}
+#message{padding:14px;border-radius:9px;margin:12px 0;display:none;line-height:1.6;overflow-wrap:anywhere}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+.tile{background:#f2f8f4;border-radius:12px;padding:18px}
+.tile h3{color:#087a45;margin:0 0 10px}
+.tile p{margin:0;overflow-wrap:anywhere}
+footer{text-align:center;padding:28px;color:#718078}
 </style>
 </head>
 <body>
@@ -37,7 +44,7 @@ footer{text-align:center;padding:25px;color:#718078}
 <main>
 <section class="hero" id="welcome">
  <h1>Welcome to <span>BidWorld</span></h1>
- <p>Discover products, explore auctions and manage your membership.</p>
+ <p>Discover products, explore auctions and manage your membership through one secure platform.</p>
  <button onclick="showRegister()">Create Free Account</button>
  <button class="secondary" onclick="showLogin()">Member Login</button>
 </section>
@@ -49,6 +56,7 @@ footer{text-align:center;padding:25px;color:#718078}
  <input id="regName" placeholder="Full Name" autocomplete="name">
  <input id="regMobile" type="tel" placeholder="Mobile Number" autocomplete="tel">
  <input id="regEmail" type="email" placeholder="Email Address" autocomplete="email">
+ <input id="regSponsor" placeholder="Sponsor Referral ID (Optional)">
  <input id="regPassword" type="password" placeholder="Password" autocomplete="new-password">
  <input id="regConfirm" type="password" placeholder="Confirm Password" autocomplete="new-password">
  <button id="registerBtn" onclick="registerUser()">Register</button>
@@ -66,11 +74,34 @@ footer{text-align:center;padding:25px;color:#718078}
 
 <section class="panel hidden" id="dashboard">
  <h2>Welcome, <span id="memberName">Member</span></h2>
- <p id="memberEmail" class="muted"></p>
- <p id="memberId" class="muted"></p>
- <h3>Member Dashboard</h3>
- <p>Your account is connected to BidWorld.</p>
- <p class="muted">Membership, wallets, referrals and auctions will be connected in the next development stages.</p>
+ <p class="muted" id="memberEmail"></p>
+ <div class="grid">
+  <div class="tile">
+   <h3>Member ID</h3>
+   <p id="memberId">Loading...</p>
+  </div>
+  <div class="tile">
+   <h3>Account Status</h3>
+   <p id="accountStatus">Loading...</p>
+  </div>
+  <div class="tile">
+   <h3>Membership</h3>
+   <p>Not connected yet</p>
+  </div>
+  <div class="tile">
+   <h3>Bidding Wallet</h3>
+   <p>₹0.00 — Pending integration</p>
+  </div>
+  <div class="tile">
+   <h3>Referral Wallet</h3>
+   <p>₹0.00 — Pending integration</p>
+  </div>
+  <div class="tile">
+   <h3>Auctions</h3>
+   <p>Auction module under development</p>
+  </div>
+ </div>
+ <br>
  <button class="secondary" onclick="logoutUser()">Logout</button>
 </section>
 </main>
@@ -78,58 +109,57 @@ footer{text-align:center;padding:25px;color:#718078}
 <footer>© 2026 BidWorld. All Rights Reserved.</footer>
 
 <script>
-const SUPABASE_URL = 'https://mmdkehfsaupivxtkxmaf.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_KJHTu11C_Qas631_NY5JTA_OUn1Erx2';
+const SUPABASE_URL='https://mmdkehfsaupivxtkxmaf.supabase.co';
+const SUPABASE_KEY='sb_publishable_KJHTu11C_Qas631_NY5JTA_OUn1Erx2';
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-const db = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const $=id=>document.getElementById(id);
 
-const $ = id => document.getElementById(id);
-
-function message(text,isError=false){
+function message(text,error=false){
  const box=$('message');
  box.textContent=text;
  box.style.display='block';
- box.style.background=isError?'#ffe8e8':'#e5f5e9';
- box.style.color=isError?'#a00000':'#086b3b';
+ box.style.background=error?'#ffe8e8':'#e5f5e9';
+ box.style.color=error?'#a00000':'#086b3b';
 }
 
-function hideForms(){
+function hideSections(){
  ['register','login','dashboard'].forEach(id=>$(id).classList.add('hidden'));
 }
 
 function showRegister(){
- hideForms();
+ hideSections();
  $('welcome').classList.add('hidden');
- $('register').classList.remove('hidden');
  $('message').style.display='none';
+ $('register').classList.remove('hidden');
 }
 
 function showLogin(){
- hideForms();
+ hideSections();
  $('welcome').classList.add('hidden');
- $('login').classList.remove('hidden');
  $('message').style.display='none';
+ $('login').classList.remove('hidden');
 }
 
 async function registerUser(){
  const name=$('regName').value.trim();
  const mobile=$('regMobile').value.trim();
  const email=$('regEmail').value.trim();
+ const sponsor=$('regSponsor').value.trim();
  const password=$('regPassword').value;
  const confirm=$('regConfirm').value;
 
- if(!name||!mobile||!email||!password){
+ if(!name||!mobile||!email||!password)
   return message('Please complete all required fields.',true);
- }
- if(!/^[0-9]{10,15}$/.test(mobile)){
+
+ if(!/^[0-9]{10,15}$/.test(mobile))
   return message('Enter a valid mobile number.',true);
- }
- if(password.length<8){
+
+ if(password.length<8)
   return message('Password must contain at least 8 characters.',true);
- }
- if(password!==confirm){
+
+ if(password!==confirm)
   return message('Passwords do not match.',true);
- }
 
  const btn=$('registerBtn');
  btn.disabled=true;
@@ -142,20 +172,21 @@ async function registerUser(){
    options:{
     data:{
      full_name:name,
-     mobile_number:mobile
+     mobile_number:mobile,
+     sponsor_referral_id:sponsor||null
     }
    }
   });
 
-  if(error) throw error;
+  if(error)throw error;
 
   if(data.session){
-   message('Registration successful. Your account is active.');
-   await loadDashboard(data.session.user);
+   await loadDashboard(data.user);
   }else{
-   message('Registration submitted. Please check your email to confirm your account, then login.');
-   hideForms();
+   hideSections();
    $('login').classList.remove('hidden');
+   $('loginEmail').value=email;
+   message('Registration submitted. Please confirm your email, then login.');
   }
  }catch(e){
   message(e.message||'Registration failed.',true);
@@ -169,9 +200,8 @@ async function loginUser(){
  const email=$('loginEmail').value.trim();
  const password=$('loginPassword').value;
 
- if(!email||!password){
+ if(!email||!password)
   return message('Enter your email and password.',true);
- }
 
  const btn=$('loginBtn');
  btn.disabled=true;
@@ -179,9 +209,8 @@ async function loginUser(){
 
  try{
   const {data,error}=await db.auth.signInWithPassword({email,password});
-  if(error) throw error;
+  if(error)throw error;
   await loadDashboard(data.user);
-  message('Login successful.');
  }catch(e){
   message(e.message||'Login failed.',true);
  }finally{
@@ -191,43 +220,51 @@ async function loginUser(){
 }
 
 async function loadDashboard(user){
- hideForms();
+ hideSections();
  $('welcome').classList.add('hidden');
+ $('message').style.display='none';
 
- const {data:profile,error}=await db
-  .from('profiles')
-  .select('member_id,full_name,email,account_status')
-  .eq('id',user.id)
-  .maybeSingle();
+ message('Loading your member profile...');
 
- if(error){
-  message('Signed in, but profile could not be loaded: '+error.message,true);
-  return;
+ try{
+  const {data:profile,error}=await db
+   .from('profiles')
+   .select('*')
+   .eq('id',user.id)
+   .maybeSingle();
+
+  if(error)throw error;
+
+  if(!profile){
+   message('Login succeeded, but your member profile was not found. Please contact support.',true);
+   $('login').classList.remove('hidden');
+   return;
+  }
+
+  $('memberName').textContent=profile.full_name||'Member';
+  $('memberEmail').textContent=user.email||'';
+  $('memberId').textContent=profile.member_id||'Pending';
+  $('accountStatus').textContent=profile.account_status||'Unknown';
+
+  $('dashboard').classList.remove('hidden');
+  $('headerBtn').textContent='Logout';
+  $('headerBtn').onclick=logoutUser;
+
+  message('Your member dashboard is ready.');
+
+ }catch(e){
+  $('login').classList.remove('hidden');
+  $('headerBtn').textContent='Login';
+  $('headerBtn').onclick=showLogin;
+  message('Profile loading error: '+e.message,true);
  }
-
- if(!profile){
-  message('Signed in. Your member profile is not available yet. Please contact support.',true);
-  return;
- }
-
- if(profile.account_status!=='active'){
-  await db.auth.signOut();
-  message('Your account is not active. Please contact support.',true);
-  return;
- }
-
- $('memberName').textContent=profile.full_name||'Member';
- $('memberEmail').textContent=profile.email||user.email||'';
- $('memberId').textContent='Member ID: '+(profile.member_id||'Pending');
-
- $('dashboard').classList.remove('hidden');
- $('headerBtn').textContent='Logout';
- $('headerBtn').onclick=logoutUser;
 }
 
 async function logoutUser(){
- await db.auth.signOut();
- hideForms();
+ const {error}=await db.auth.signOut();
+ if(error)return message(error.message,true);
+
+ hideSections();
  $('welcome').classList.remove('hidden');
  $('headerBtn').textContent='Login';
  $('headerBtn').onclick=showLogin;
@@ -239,21 +276,31 @@ async function resetPassword(){
  if(!email)return message('Enter your email address first.',true);
 
  const {error}=await db.auth.resetPasswordForEmail(email,{
-  redirectTo:location.origin
+  redirectTo:location.origin+location.pathname
  });
  if(error)return message(error.message,true);
+
  message('Password reset instructions sent to your email.');
 }
 
 db.auth.onAuthStateChange((event,session)=>{
- if(event==='SIGNED_IN'&&session){
-  loadDashboard(session.user);
+ if(event==='SIGNED_OUT'){
+  hideSections();
+  $('welcome').classList.remove('hidden');
+  $('headerBtn').textContent='Login';
+  $('headerBtn').onclick=showLogin;
  }
 });
 
 (async()=>{
- const {data:{session}}=await db.auth.getSession();
- if(session) await loadDashboard(session.user);
+ const {data,error}=await db.auth.getSession();
+ if(error){
+  message(error.message,true);
+  return;
+ }
+ if(data.session){
+  await loadDashboard(data.session.user);
+ }
 })();
 </script>
 </body>
