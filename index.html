@@ -9,28 +9,37 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial,sans-serif;background:#f4f8f5;color:#20352a}
-header{background:white;padding:17px 6%;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 12px #0001}
+header{background:white;padding:17px 5%;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 12px #0001;position:sticky;top:0;z-index:5}
 .logo{font-size:27px;font-weight:bold;color:#087a45}
-button{border:0;border-radius:9px;padding:14px 20px;background:#087a45;color:white;font-size:15px;font-weight:bold;cursor:pointer}
-button:disabled{opacity:.6}
+button{border:0;border-radius:9px;padding:13px 18px;background:#087a45;color:white;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.5}
 .secondary{background:#e6f3e9;color:#087a45}
-main{max-width:900px;margin:auto;padding:28px 16px}
-.hero{text-align:center;padding:55px 15px;background:#e5f4e9;border-radius:17px;margin-bottom:25px}
-.hero h1{font-size:36px}
+.danger{background:#a52c2c}
+main{max-width:950px;margin:auto;padding:25px 15px}
+.hero{text-align:center;padding:45px 15px;background:#e5f4e9;border-radius:17px;margin-bottom:22px}
+.hero h1{font-size:35px}
 .hero span{color:#087a45}
-.hero p{line-height:1.7;color:#617268}
-.panel{background:white;padding:25px;border-radius:16px;margin:20px 0;box-shadow:0 4px 18px #0000000a}
-.panel h2{margin-top:0}
-input{width:100%;padding:15px;margin:8px 0;border:1px solid #d5e0d9;border-radius:9px;font-size:16px}
-.form button{width:100%;margin-top:12px}
+.panel{background:white;padding:23px;border-radius:15px;margin:18px 0;box-shadow:0 4px 18px #0000000a}
+input,textarea,select{width:100%;padding:14px;margin:7px 0 13px;border:1px solid #d5e0d9;border-radius:8px;font-size:16px;background:white}
+textarea{min-height:85px}
+label{font-weight:bold;font-size:14px}
+.form button{width:100%;margin-top:8px}
 .hidden{display:none!important}
 .muted{color:#718078;font-size:14px;line-height:1.6}
 a{color:#087a45;cursor:pointer}
-#message{padding:14px;border-radius:9px;margin:12px 0;display:none;line-height:1.6;overflow-wrap:anywhere}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
-.tile{background:#f2f8f4;border-radius:12px;padding:18px}
-.tile h3{color:#087a45;margin:0 0 10px}
+#message{padding:14px;border-radius:9px;margin:12px 0;display:none;line-height:1.5;overflow-wrap:anywhere}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:13px}
+.tile{background:#f1f7f3;border-radius:12px;padding:17px}
+.tile h3{color:#087a45;margin:0 0 9px}
 .tile p{margin:0;overflow-wrap:anywhere}
+.nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px}
+.nav button{flex:1;min-width:120px}
+.package{border:1px solid #e0e9e3;border-radius:12px;padding:17px;margin:12px 0}
+.package h3{margin:0 0 8px;color:#087a45}
+.package-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.package-actions button{flex:1}
+.status{font-size:12px;font-weight:bold;color:#087a45;background:#e5f4e9;padding:5px 9px;border-radius:20px}
+.price{font-size:23px;font-weight:bold}
 footer{text-align:center;padding:28px;color:#718078}
 </style>
 </head>
@@ -44,7 +53,7 @@ footer{text-align:center;padding:28px;color:#718078}
 <main>
 <section class="hero" id="welcome">
  <h1>Welcome to <span>BidWorld</span></h1>
- <p>Discover products, explore auctions and manage your membership through one secure platform.</p>
+ <p>Discover products, explore auctions and manage your membership.</p>
  <button onclick="showRegister()">Create Free Account</button>
  <button class="secondary" onclick="showLogin()">Member Login</button>
 </section>
@@ -53,56 +62,93 @@ footer{text-align:center;padding:28px;color:#718078}
 
 <section class="panel form hidden" id="register">
  <h2>Create Your Account</h2>
- <input id="regName" placeholder="Full Name" autocomplete="name">
- <input id="regMobile" type="tel" placeholder="Mobile Number" autocomplete="tel">
- <input id="regEmail" type="email" placeholder="Email Address" autocomplete="email">
- <input id="regSponsor" placeholder="Sponsor Referral ID (Optional)">
- <input id="regPassword" type="password" placeholder="Password" autocomplete="new-password">
- <input id="regConfirm" type="password" placeholder="Confirm Password" autocomplete="new-password">
+ <label>Full Name</label>
+ <input id="regName" placeholder="Full Name">
+ <label>Mobile Number</label>
+ <input id="regMobile" type="tel" placeholder="Mobile Number">
+ <label>Email Address</label>
+ <input id="regEmail" type="email" placeholder="Email Address">
+ <label>Sponsor Referral ID (Optional)</label>
+ <input id="regSponsor" placeholder="Sponsor Referral ID">
+ <label>Password</label>
+ <input id="regPassword" type="password" placeholder="Password">
+ <label>Confirm Password</label>
+ <input id="regConfirm" type="password" placeholder="Confirm Password">
  <button id="registerBtn" onclick="registerUser()">Register</button>
  <p class="muted">Already registered? <a onclick="showLogin()">Login</a></p>
 </section>
 
 <section class="panel form hidden" id="login">
  <h2>Member Login</h2>
- <input id="loginEmail" type="email" placeholder="Email Address" autocomplete="email">
- <input id="loginPassword" type="password" placeholder="Password" autocomplete="current-password">
+ <input id="loginEmail" type="email" placeholder="Email Address">
+ <input id="loginPassword" type="password" placeholder="Password">
  <button id="loginBtn" onclick="loginUser()">Login</button>
  <p class="muted"><a onclick="resetPassword()">Forgot Password?</a></p>
  <p class="muted">New member? <a onclick="showRegister()">Create Account</a></p>
 </section>
 
-<section class="panel hidden" id="dashboard">
- <h2>Welcome, <span id="memberName">Member</span></h2>
- <p class="muted" id="memberEmail"></p>
- <div class="grid">
-  <div class="tile">
-   <h3>Member ID</h3>
-   <p id="memberId">Loading...</p>
-  </div>
-  <div class="tile">
-   <h3>Account Status</h3>
-   <p id="accountStatus">Loading...</p>
-  </div>
-  <div class="tile">
-   <h3>Membership</h3>
-   <p>Not connected yet</p>
-  </div>
-  <div class="tile">
-   <h3>Bidding Wallet</h3>
-   <p>₹0.00 — Pending integration</p>
-  </div>
-  <div class="tile">
-   <h3>Referral Wallet</h3>
-   <p>₹0.00 — Pending integration</p>
-  </div>
-  <div class="tile">
-   <h3>Auctions</h3>
-   <p>Auction module under development</p>
+<section class="hidden" id="dashboard">
+ <div class="panel">
+  <h2>Welcome, <span id="memberName">Member</span></h2>
+  <p class="muted" id="memberEmail"></p>
+  <div class="grid">
+   <div class="tile"><h3>Member ID</h3><p id="memberId">-</p></div>
+   <div class="tile"><h3>Account Status</h3><p id="accountStatus">-</p></div>
+   <div class="tile"><h3>Membership</h3><p id="memberMembership">Not activated</p></div>
+   <div class="tile"><h3>Bidding Wallet</h3><p>₹0.00</p></div>
+   <div class="tile"><h3>Referral Wallet</h3><p>₹0.00</p></div>
   </div>
  </div>
- <br>
- <button class="secondary" onclick="logoutUser()">Logout</button>
+
+ <div class="panel hidden" id="adminPanel">
+  <h2>Admin Dashboard</h2>
+  <p class="muted">Package Management</p>
+  <div class="nav">
+   <button onclick="showAdminTab('packageForm')">Create Package</button>
+   <button class="secondary" onclick="loadPackages()">View Packages</button>
+  </div>
+
+  <section id="packageForm" class="panel">
+   <h3 id="packageFormTitle">Create Membership Package</h3>
+   <input id="editPackageId" type="hidden">
+   <label>Package Code</label>
+   <input id="packageCode" placeholder="Example: BW-PKG-001">
+   <label>Package Name</label>
+   <input id="packageName" placeholder="Package Name">
+   <label>Package Price (₹)</label>
+   <input id="packagePrice" type="number" min="0" step="0.01" placeholder="3000">
+   <label>Bidding Wallet Credit (₹)</label>
+   <input id="walletCredit" type="number" min="0" step="0.01" placeholder="2500">
+   <label>Validity (Days)</label>
+   <input id="validityDays" type="number" min="1" placeholder="365">
+   <label>Description</label>
+   <textarea id="packageDescription" placeholder="Package details"></textarea>
+   <label>Package Status</label>
+   <select id="packageStatus">
+    <option value="draft">Draft</option>
+    <option value="active">Active</option>
+    <option value="inactive">Inactive</option>
+   </select>
+   <button id="savePackageBtn" onclick="savePackage()">Save Package</button>
+   <button class="secondary" onclick="clearPackageForm()">Clear Form</button>
+  </section>
+
+  <section class="panel">
+   <h3>Membership Packages</h3>
+   <div id="packageList"><p class="muted">Loading packages...</p></div>
+  </section>
+ </div>
+
+ <div class="panel" id="memberPackagesPanel">
+  <h2>Available Membership Packages</h2>
+  <div id="memberPackageList"><p class="muted">Loading packages...</p></div>
+ </div>
+
+ <div class="panel">
+  <h3>More BidWorld Features</h3>
+  <p class="muted">Auctions, bid history, referral tree, matrix tree, payment activation and withdrawals will be connected in upcoming development stages.</p>
+  <button class="secondary" onclick="logoutUser()">Logout</button>
+ </div>
 </section>
 </main>
 
@@ -112,8 +158,9 @@ footer{text-align:center;padding:28px;color:#718078}
 const SUPABASE_URL='https://mmdkehfsaupivxtkxmaf.supabase.co';
 const SUPABASE_KEY='sb_publishable_KJHTu11C_Qas631_NY5JTA_OUn1Erx2';
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-
 const $=id=>document.getElementById(id);
+let currentUser=null;
+let currentProfile=null;
 
 function message(text,error=false){
  const box=$('message');
@@ -151,13 +198,10 @@ async function registerUser(){
 
  if(!name||!mobile||!email||!password)
   return message('Please complete all required fields.',true);
-
  if(!/^[0-9]{10,15}$/.test(mobile))
   return message('Enter a valid mobile number.',true);
-
  if(password.length<8)
   return message('Password must contain at least 8 characters.',true);
-
  if(password!==confirm)
   return message('Passwords do not match.',true);
 
@@ -167,17 +211,13 @@ async function registerUser(){
 
  try{
   const {data,error}=await db.auth.signUp({
-   email,
-   password,
-   options:{
-    data:{
-     full_name:name,
-     mobile_number:mobile,
-     sponsor_referral_id:sponsor||null
-    }
-   }
+   email,password,
+   options:{data:{
+    full_name:name,
+    mobile_number:mobile,
+    sponsor_referral_id:sponsor||null
+   }}
   });
-
   if(error)throw error;
 
   if(data.session){
@@ -186,7 +226,7 @@ async function registerUser(){
    hideSections();
    $('login').classList.remove('hidden');
    $('loginEmail').value=email;
-   message('Registration submitted. Please confirm your email, then login.');
+   message('Registration submitted. Confirm your email, then login.');
   }
  }catch(e){
   message(e.message||'Registration failed.',true);
@@ -199,14 +239,11 @@ async function registerUser(){
 async function loginUser(){
  const email=$('loginEmail').value.trim();
  const password=$('loginPassword').value;
-
- if(!email||!password)
-  return message('Enter your email and password.',true);
+ if(!email||!password)return message('Enter email and password.',true);
 
  const btn=$('loginBtn');
  btn.disabled=true;
  btn.textContent='Signing in...';
-
  try{
   const {data,error}=await db.auth.signInWithPassword({email,password});
   if(error)throw error;
@@ -223,24 +260,16 @@ async function loadDashboard(user){
  hideSections();
  $('welcome').classList.add('hidden');
  $('message').style.display='none';
-
- message('Loading your member profile...');
+ message('Loading your profile...');
 
  try{
-  const {data:profile,error}=await db
-   .from('profiles')
-   .select('*')
-   .eq('id',user.id)
-   .maybeSingle();
-
+  const {data:profile,error}=await db.from('profiles')
+   .select('*').eq('id',user.id).maybeSingle();
   if(error)throw error;
+  if(!profile)throw new Error('Member profile not found.');
 
-  if(!profile){
-   message('Login succeeded, but your member profile was not found. Please contact support.',true);
-   $('login').classList.remove('hidden');
-   return;
-  }
-
+  currentUser=user;
+  currentProfile=profile;
   $('memberName').textContent=profile.full_name||'Member';
   $('memberEmail').textContent=user.email||'';
   $('memberId').textContent=profile.member_id||'Pending';
@@ -249,13 +278,18 @@ async function loadDashboard(user){
   $('dashboard').classList.remove('hidden');
   $('headerBtn').textContent='Logout';
   $('headerBtn').onclick=logoutUser;
-
   message('Your member dashboard is ready.');
+
+  if(profile.role==='admin'){
+   $('adminPanel').classList.remove('hidden');
+   await loadPackages();
+  }else{
+   $('adminPanel').classList.add('hidden');
+  }
+  await loadMemberPackages();
 
  }catch(e){
   $('login').classList.remove('hidden');
-  $('headerBtn').textContent='Login';
-  $('headerBtn').onclick=showLogin;
   message('Profile loading error: '+e.message,true);
  }
 }
@@ -263,7 +297,8 @@ async function loadDashboard(user){
 async function logoutUser(){
  const {error}=await db.auth.signOut();
  if(error)return message(error.message,true);
-
+ currentUser=null;
+ currentProfile=null;
  hideSections();
  $('welcome').classList.remove('hidden');
  $('headerBtn').textContent='Login';
@@ -274,17 +309,213 @@ async function logoutUser(){
 async function resetPassword(){
  const email=$('loginEmail').value.trim();
  if(!email)return message('Enter your email address first.',true);
-
  const {error}=await db.auth.resetPasswordForEmail(email,{
   redirectTo:location.origin+location.pathname
  });
  if(error)return message(error.message,true);
-
  message('Password reset instructions sent to your email.');
+}
+
+function showAdminTab(id){
+ $('packageForm').classList.toggle('hidden',id!=='packageForm');
+ if(id==='packageForm')$('packageFormTitle').textContent='Create Membership Package';
+}
+
+function clearPackageForm(){
+ $('editPackageId').value='';
+ $('packageCode').value='';
+ $('packageName').value='';
+ $('packagePrice').value='';
+ $('walletCredit').value='';
+ $('validityDays').value='';
+ $('packageDescription').value='';
+ $('packageStatus').value='draft';
+ $('packageFormTitle').textContent='Create Membership Package';
+ $('savePackageBtn').textContent='Save Package';
+}
+
+async function savePackage(){
+ if(!currentProfile||currentProfile.role!=='admin')
+  return message('Admin access required.',true);
+
+ const id=$('editPackageId').value;
+ const code=$('packageCode').value.trim();
+ const name=$('packageName').value.trim();
+ const price=Number($('packagePrice').value);
+ const credit=Number($('walletCredit').value);
+ const validity=$('validityDays').value;
+ const description=$('packageDescription').value.trim();
+ const status=$('packageStatus').value;
+
+ if(!code||!name||$('packagePrice').value===''||$('walletCredit').value==='')
+  return message('Enter package code, name, price and wallet credit.',true);
+ if(price<0||credit<0)
+  return message('Price and wallet credit cannot be negative.',true);
+ if(validity!==''&&Number(validity)<=0)
+  return message('Validity must be greater than zero.',true);
+
+ const record={
+  package_code:code,
+  package_name:name,
+  package_price:price,
+  bidding_wallet_credit:credit,
+  validity_days:validity===''?null:Number(validity),
+  description:description||null,
+  status:status
+ };
+
+ const btn=$('savePackageBtn');
+ btn.disabled=true;
+ btn.textContent='Saving...';
+
+ try{
+  let result;
+  if(id){
+   result=await db.from('membership_packages').update(record).eq('id',id);
+  }else{
+   record.created_by=currentUser.id;
+   result=await db.from('membership_packages').insert(record);
+  }
+  if(result.error)throw result.error;
+
+  message(id?'Package updated successfully.':'Package created successfully.');
+  clearPackageForm();
+  await loadPackages();
+  await loadMemberPackages();
+ }catch(e){
+  message('Package save failed: '+e.message,true);
+ }finally{
+  btn.disabled=false;
+  btn.textContent='Save Package';
+ }
+}
+
+async function loadPackages(){
+ if(!currentProfile||currentProfile.role!=='admin')return;
+ $('packageList').innerHTML='<p class="muted">Loading...</p>';
+
+ const {data,error}=await db.from('membership_packages')
+  .select('*').order('created_at',{ascending:false});
+
+ if(error){
+  $('packageList').textContent='Could not load packages: '+error.message;
+  message('Package loading error: '+error.message,true);
+  return;
+ }
+ if(!data||!data.length){
+  $('packageList').innerHTML='<p class="muted">No packages created yet.</p>';
+  return;
+ }
+
+ $('packageList').innerHTML='';
+ data.forEach(p=>{
+  const card=document.createElement('div');
+  card.className='package';
+
+  const title=document.createElement('h3');
+  title.textContent=p.package_name;
+  const code=document.createElement('p');
+  code.textContent='Code: '+p.package_code;
+  const price=document.createElement('p');
+  price.className='price';
+  price.textContent='₹'+Number(p.package_price).toLocaleString('en-IN');
+  const details=document.createElement('p');
+  details.textContent='Wallet Credit: ₹'+Number(p.bidding_wallet_credit).toLocaleString('en-IN')+' | Validity: '+(p.validity_days||'Unlimited')+' days';
+  const status=document.createElement('span');
+  status.className='status';
+  status.textContent=String(p.status).toUpperCase();
+
+  const actions=document.createElement('div');
+  actions.className='package-actions';
+
+  const edit=document.createElement('button');
+  edit.className='secondary';
+  edit.textContent='Edit';
+  edit.onclick=()=>editPackage(p.id);
+
+  const toggle=document.createElement('button');
+  toggle.textContent=p.status==='active'?'Deactivate':'Activate';
+  toggle.className=p.status==='active'?'danger':'secondary';
+  toggle.onclick=()=>changePackageStatus(p.id,p.status);
+
+  actions.append(edit,toggle);
+  card.append(title,code,price,details,status,actions);
+  $('packageList').append(card);
+ });
+}
+
+async function editPackage(id){
+ const {data,error}=await db.from('membership_packages')
+  .select('*').eq('id',id).single();
+ if(error)return message(error.message,true);
+
+ $('editPackageId').value=data.id;
+ $('packageCode').value=data.package_code||'';
+ $('packageName').value=data.package_name||'';
+ $('packagePrice').value=data.package_price;
+ $('walletCredit').value=data.bidding_wallet_credit;
+ $('validityDays').value=data.validity_days||'';
+ $('packageDescription').value=data.description||'';
+ $('packageStatus').value=data.status;
+ $('packageFormTitle').textContent='Edit Membership Package';
+ $('savePackageBtn').textContent='Update Package';
+ $('packageForm').classList.remove('hidden');
+ $('packageForm').scrollIntoView({behavior:'smooth'});
+}
+
+async function changePackageStatus(id,oldStatus){
+ if(!currentProfile||currentProfile.role!=='admin')
+  return message('Admin access required.',true);
+
+ const newStatus=oldStatus==='active'?'inactive':'active';
+ const {error}=await db.from('membership_packages')
+  .update({status:newStatus}).eq('id',id);
+
+ if(error)return message('Status update failed: '+error.message,true);
+ message('Package status changed to '+newStatus+'.');
+ await loadPackages();
+ await loadMemberPackages();
+}
+
+async function loadMemberPackages(){
+ const {data,error}=await db.from('membership_packages')
+  .select('id,package_code,package_name,package_price,bidding_wallet_credit,validity_days,description')
+  .eq('status','active').order('package_price');
+
+ if(error){
+  $('memberPackageList').textContent='Packages could not be loaded.';
+  return;
+ }
+ if(!data||!data.length){
+  $('memberPackageList').innerHTML='<p class="muted">No active packages available currently.</p>';
+  return;
+ }
+
+ $('memberPackageList').innerHTML='';
+ data.forEach(p=>{
+  const card=document.createElement('div');
+  card.className='package';
+  const title=document.createElement('h3');
+  title.textContent=p.package_name;
+  const price=document.createElement('p');
+  price.className='price';
+  price.textContent='₹'+Number(p.package_price).toLocaleString('en-IN');
+  const details=document.createElement('p');
+  details.textContent='Bidding Wallet Credit: ₹'+Number(p.bidding_wallet_credit).toLocaleString('en-IN');
+  const validity=document.createElement('p');
+  validity.textContent='Validity: '+(p.validity_days||'Unlimited')+' days';
+  const desc=document.createElement('p');
+  desc.className='muted';
+  desc.textContent=p.description||'';
+  card.append(title,price,details,validity,desc);
+  $('memberPackageList').append(card);
+ });
 }
 
 db.auth.onAuthStateChange((event,session)=>{
  if(event==='SIGNED_OUT'){
+  currentUser=null;
+  currentProfile=null;
   hideSections();
   $('welcome').classList.remove('hidden');
   $('headerBtn').textContent='Login';
@@ -294,13 +525,8 @@ db.auth.onAuthStateChange((event,session)=>{
 
 (async()=>{
  const {data,error}=await db.auth.getSession();
- if(error){
-  message(error.message,true);
-  return;
- }
- if(data.session){
-  await loadDashboard(data.session.user);
- }
+ if(error){message(error.message,true);return;}
+ if(data.session)await loadDashboard(data.session.user);
 })();
 </script>
 </body>
