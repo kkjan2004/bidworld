@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#087a45">
+<title>BidWorld - Premium Auction Platform</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#f6f9f7;color:#17251e}
+header{background:white;padding:17px 6%;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 12px #0000000b}
+.logo{font-size:25px;font-weight:800;color:#087a45}
+nav a{margin-left:18px;text-decoration:none;color:#34463c;font-weight:600}
+button{background:#087a45;color:white;border:0;padding:12px 20px;border-radius:8px;font-weight:bold;cursor:pointer}
+.hero{text-align:center;padding:75px 18px;background:linear-gradient(135deg,#e6f7ed,#ffffff)}
+.hero h1{font-size:42px;margin-bottom:18px}
+.hero h1 span{color:#087a45}
+.hero p{color:#64746a;font-size:17px;line-height:1.7;max-width:600px;margin:0 auto 25px}
+.section{padding:45px 6%}
+.section h2{text-align:center;margin-bottom:25px;font-size:27px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+.card{background:white;padding:25px;border-radius:14px;box-shadow:0 4px 18px #0000000a}
+.card h3{color:#087a45;margin-bottom:12px}
+.card p{color:#68766d;line-height:1.6}
+.auth{max-width:440px;margin:30px auto;background:white;padding:25px;border-radius:14px;box-shadow:0 4px 20px #00000012}
+.auth h2{margin-bottom:18px;color:#087a45}
+.auth input{width:100%;padding:13px;margin:8px 0;border:1px solid #d8e2dc;border-radius:8px;font-size:15px}
+.auth button{width:100%;margin-top:12px}
+.auth a{color:#087a45;cursor:pointer}
+.hidden{display:none}
+.notice{font-size:13px;color:#68766d;margin-top:12px;line-height:1.5}
+footer{text-align:center;padding:25px;background:#103b29;color:white;margin-top:35px}
+@media(max-width:600px){
+.hero h1{font-size:32px}
+nav a{margin-left:8px;font-size:13px}
+header{padding:15px 4%}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">BidWorld</div>
+  <nav>
+    <a href="#home">Home</a>
+    <a href="#features">Features</a>
+    <button onclick="showAuth('login')">Login</button>
+  </nav>
+</header>
+
+<section class="hero" id="home">
+  <h1>Welcome to <span>BidWorld</span></h1>
+  <p>Discover exciting auctions, explore products and manage your membership through one secure platform.</p>
+  <button onclick="showAuth('register')">Create Free Account</button>
+</section>
+
+<section class="section" id="features">
+  <h2>Explore BidWorld</h2>
+  <div class="cards">
+    <div class="card">
+      <h3>Live Auctions</h3>
+      <p>Explore available products and participate in auctions.</p>
+    </div>
+    <div class="card">
+      <h3>Membership Packages</h3>
+      <p>Choose a membership package and track activation status.</p>
+    </div>
+    <div class="card">
+      <h3>Member Dashboard</h3>
+      <p>Manage your profile, wallet, referrals and bidding history.</p>
+    </div>
+    <div class="card">
+      <h3>Secure Platform</h3>
+      <p>Account access and payment verification through controlled processes.</p>
+    </div>
+  </div>
+</section>
+
+<div class="auth hidden" id="login">
+  <h2>Member Login</h2>
+  <input type="email" placeholder="Email Address">
+  <input type="password" placeholder="Password">
+  <button onclick="connectionMessage()">Login</button>
+  <p class="notice">New member? <a onclick="showAuth('register')">Create an account</a></p>
+</div>
+
+<div class="auth hidden" id="register">
+  <h2>Create Your Account</h2>
+  <input type="text" placeholder="Full Name">
+  <input type="tel" placeholder="Mobile Number">
+  <input type="email" placeholder="Email Address (Optional)">
+  <input type="text" placeholder="Sponsor Referral ID (Optional)">
+  <input type="password" placeholder="Password">
+  <input type="password" placeholder="Confirm Password">
+  <button onclick="connectionMessage()">Register</button>
+  <p class="notice">Already registered? <a onclick="showAuth('login')">Login</a></p>
+</div>
+
+<footer>
+  <p>© 2026 BidWorld. All Rights Reserved.</p>
+</footer>
+
+<script>
+function showAuth(type){
+  document.getElementById('login').classList.add('hidden');
+  document.getElementById('register').classList.add('hidden');
+  document.getElementById(type).classList.remove('hidden');
+  document.getElementById(type).scrollIntoView({behavior:'smooth'});
+}
+function connectionMessage(){
+  alert('Supabase authentication connection is pending. Registration and login are not active yet.');
+}
+</script>
+
+</body>
+                                                  </html>
