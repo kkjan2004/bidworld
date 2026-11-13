@@ -107,8 +107,8 @@ footer{text-align:center;padding:25px;color:var(--muted)}
         <div class="tile"><h3>Member ID</h3><p id="memberId">—</p></div>
         <div class="tile"><h3>Account Status</h3><p id="accountStatus">—</p></div>
         <div class="tile"><h3>Membership</h3><p id="memberMembership">Not activated</p></div>
-        <div class="tile"><h3>Bidding Wallet</h3><p>₹0.00</p></div>
-        <div class="tile"><h3>Referral Wallet</h3><p>₹0.00</p></div>
+        <div class="tile"><h3>Bidding Wallet</h3><p id="biddingWalletBalance">₹0.00</p></div>
+        <div class="tile"><h3>Referral Wallet</h3><p id="referralWalletBalance">₹0.00</p></div>
         <div class="tile"><h3>Your Referral ID</h3><p id="myReferralId">—</p></div>
         <div class="tile"><h3>Direct Referrals</h3><p id="directReferralCount">0</p></div>
       </div>
@@ -124,6 +124,17 @@ footer{text-align:center;padding:25px;color:var(--muted)}
       <div id="myBidHistory"><p class="muted">Loading bid history...</p></div>
       <h3>Announced Winners</h3>
       <div id="winnerAnnouncements"><p class="muted">Loading winners...</p></div>
+    </section>
+
+
+    <section class="panel" id="walletReferralPanel">
+      <h2>Wallet & Referral History</h2>
+      <h3>Wallet Transactions</h3>
+      <button type="button" class="secondary" id="refreshWalletBtn">Refresh Wallet History</button>
+      <div id="walletHistory"><p class="muted">Loading wallet history...</p></div>
+      <hr>
+      <h3>My Direct Referrals</h3>
+      <div id="myReferralList"><p class="muted">Loading referrals...</p></div>
     </section>
 
     <section class="panel" id="membershipActivationPanel">
@@ -325,6 +336,7 @@ async function loadDashboard(user){
     $('membershipActivationPanel').classList.remove('hidden');
     $('auctionPanel').classList.remove('hidden');
     await loadLiveAuctions();await loadMyBids();await loadWinners();
+    await loadWalletAndReferrals();
     await loadActivationPanel();
     $('headerBtn').textContent='Logout';
     if(profile.role==='admin'){
@@ -547,6 +559,49 @@ async function reviewActivation(id,decision){
     await loadAdminActivationQueue();
   }catch(e){showMessage('Review failed: '+e.message,true);}
 }
+
+async function loadWalletAndReferrals(){
+  if(!currentUser)return;
+  const history=$('walletHistory'), referrals=$('myReferralList');
+  history.textContent='Loading wallet history...';
+  referrals.textContent='Loading referrals...';
+  try{
+    const [{data:wallets,error:we},{data:tx,error:te},{data:refs,error:re}] = await Promise.all([
+      db.from('wallet_accounts').select('wallet_type,balance').eq('member_id',currentUser.id),
+      db.from('wallet_transactions').select('transaction_code,wallet_type,direction,amount,balance_after,source_type,reference_text,created_at').eq('member_id',currentUser.id).order('created_at',{ascending:false}).limit(50),
+      db.from('my_direct_referrals').select('member_id,full_name,joined_at,status').order('joined_at',{ascending:false}).limit(100)
+    ]);
+    if(we)throw we;if(te)throw te;if(re)throw re;
+    const balances={bidding:0,referral_income:0};
+    (wallets||[]).forEach(w=>{balances[w.wallet_type]=Number(w.balance)||0;});
+    $('biddingWalletBalance').textContent='₹'+balances.bidding.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+    $('referralWalletBalance').textContent='₹'+balances.referral_income.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+    history.replaceChildren();
+    if(!tx||!tx.length){history.textContent='No wallet transactions yet.';}
+    else tx.forEach(t=>{
+      const card=document.createElement('article');card.className='package';
+      const title=document.createElement('h3');title.textContent=(t.direction==='credit'?'Credit':'Debit')+' · '+(t.wallet_type==='bidding'?'Bidding Wallet':'Referral Wallet');
+      const amount=document.createElement('p');amount.textContent=(t.direction==='credit'?'+':'−')+'₹'+Number(t.amount).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+      const detail=document.createElement('p');detail.className='muted';detail.textContent=(t.reference_text||t.source_type||'Wallet transaction')+' · '+new Date(t.created_at).toLocaleString('en-IN');
+      const balance=document.createElement('p');balance.textContent='Balance after: ₹'+Number(t.balance_after||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+      const code=document.createElement('small');code.className='muted';code.textContent=t.transaction_code;
+      card.append(title,amount,detail,balance,code);history.append(card);
+    });
+    referrals.replaceChildren();
+    if(!refs||!refs.length){referrals.textContent='No direct referrals yet.';}
+    else refs.forEach(r=>{
+      const card=document.createElement('article');card.className='package';
+      const name=document.createElement('h3');name.textContent=r.full_name||'Member';
+      const id=document.createElement('p');id.textContent='Member ID: '+(r.member_id||'Pending');
+      const joined=document.createElement('p');joined.className='muted';joined.textContent='Joined: '+new Date(r.joined_at).toLocaleDateString('en-IN')+' · '+r.status;
+      card.append(name,id,joined);referrals.append(card);
+    });
+  }catch(e){
+    history.textContent='Wallet/referral history could not load: '+e.message;
+    referrals.textContent='Referral list could not load: '+e.message;
+  }
+}
+
 async function loadAdminProducts(){
   if(!currentProfile||currentProfile.role!=='admin')return;
   const target=$('adminProducts');target.textContent='Loading products...';
@@ -698,6 +753,7 @@ function bind(){
   $('saveProductBtn').addEventListener('click',saveProduct);
   $('saveAuctionBtn').addEventListener('click',saveAuction);
   $('refreshAuctionsBtn').addEventListener('click',loadLiveAuctions);
+  $('refreshWalletBtn').addEventListener('click',loadWalletAndReferrals);
   $('selectWinnerBtn').addEventListener('click',selectWinner);
   $('showPackageFormBtn').addEventListener('click',()=>{$('adminPackageForm').classList.remove('hidden');clearPackageForm();$('adminPackageForm').scrollIntoView({behavior:'smooth'});});
   $('viewPackagesBtn').addEventListener('click',async()=>{$('adminPackageForm').classList.add('hidden');$('adminPackageListPanel').scrollIntoView({behavior:'smooth'});await loadAdminPackages();await loadAdminActivationQueue();await loadAdminProducts();await loadAdminAuctions();});
