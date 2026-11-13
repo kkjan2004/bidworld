@@ -196,7 +196,8 @@ footer{text-align:center;padding:25px;color:var(--muted)}
       <div id="adminActivationQueue"><p class="muted">Loading requests...</p></div>
     </section>
 
-    <div class="panel">
+    <section class="panel hidden" id="adminToolsPanel">
+      <h2>Admin Product & Auction Tools</h2>
       <h3>Product Catalogue</h3>
       <label for="productTitle">Product Title</label><input id="productTitle">
       <label for="productDescription">Product Description</label><textarea id="productDescription"></textarea>
@@ -223,7 +224,7 @@ footer{text-align:center;padding:25px;color:var(--muted)}
       <button type="button" id="selectWinnerBtn">Select & Announce Winner</button>
       <hr>
       <button type="button" class="secondary" id="logoutBtn">Logout</button>
-    </div>
+    </section>
   </section>
 </main>
 <footer>© 2026 BidWorld. All Rights Reserved.</footer>
@@ -244,7 +245,7 @@ function showMessage(text,isError=false){
   box.style.color=isError?'#a00000':'#086b3b';
 }
 function hideMainSections(){
-  ['registerPanel','loginPanel','dashboard'].forEach(id=>$(id).classList.add('hidden'));
+  ['registerPanel','loginPanel','dashboard','adminPanel','adminToolsPanel'].forEach(id=>$(id).classList.add('hidden'));
 }
 function showHome(){
   hideMainSections();
@@ -339,11 +340,13 @@ async function loadDashboard(user){
     await loadWalletAndReferrals();
     await loadActivationPanel();
     $('headerBtn').textContent='Logout';
-    if(profile.role==='admin'){
-      $('adminPanel').classList.remove('hidden');
+    const isAdmin = profile.role === 'admin' && profile.account_status === 'active';
+    $('adminPanel').classList.toggle('hidden',!isAdmin);
+    $('adminToolsPanel').classList.toggle('hidden',!isAdmin);
+    if(isAdmin){
       await loadAdminPackages();
-    }else{
-      $('adminPanel').classList.add('hidden');
+      await loadAdminProducts();
+      await loadAdminAuctions();
     }
     showMessage('Your member dashboard is ready.');
   }catch(e){
