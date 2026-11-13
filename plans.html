@@ -10,17 +10,17 @@
     <header>
         <a href="admin.html" class="logo">🟢 BidWorld Admin</a>
         <nav>
-            <a href="admin.html">Admin Home</a>
+            <a href="admin.html">Home</a>
             <a href="plans.html" class="active">Plans</a>
         </nav>
     </header>
     <div class="container">
-        <h2 style="margin-bottom: 15px; font-size: 20px;">Referral & Matrix Setup</h2>
+        <h2 style="margin-bottom: 15px; font-size: 18px;">Referral & Matrix Setup</h2>
         
         <div class="card">
-            <h3 style="color: var(--primary); margin-bottom: 8px;">Referral Plan Setup</h3>
-            <p style="margin-bottom: 12px;">Set the number of levels and define rewards as JSON format:</p>
-            <div style="background: #F3F4F6; padding: 10px; border-radius: 6px; font-family: monospace; font-size: 12px; margin-bottom: 12px; overflow-x: auto;">
+            <h3 style="color: var(--primary); margin-bottom: 6px; font-size: 16px;">Referral Plan Setup</h3>
+            <p style="margin-bottom: 10px;">Set levels and define rewards as JSON format:</p>
+            <div style="background: #F3F4F6; padding: 8px; border-radius: 6px; font-family: monospace; font-size: 11px; margin-bottom: 10px; overflow-x: auto;">
                 [{"level":1,"type":"percent","value":5},<br>{"level":2,"type":"percent","value":2}]
             </div>
 
@@ -31,13 +31,13 @@
             <input type="number" id="numLevels" value="5" min="1" max="20">
 
             <label>Level Reward Rules (JSON)</label>
-            <textarea id="rewardRules" rows="4" style="font-family: monospace;">[{"level":1,"type":"percent","value":5},{"level":2,"type":"percent","value":2}]</textarea>
+            <textarea id="rewardRules" rows="3" style="font-family: monospace; font-size: 12px;">[{"level":1,"type":"percent","value":5},{"level":2,"type":"percent","value":2}]</textarea>
 
             <button class="btn" style="width: 100%; margin-top: 5px;" onclick="saveReferralPlan()">Save Referral Plan</button>
         </div>
 
         <div class="card">
-            <h3 style="color: var(--primary); margin-bottom: 8px;">Existing Referral Plans</h3>
+            <h3 style="color: var(--primary); margin-bottom: 6px; font-size: 16px;">Existing Referral Plans</h3>
             <p id="existingPlansStatus">No referral plans configured yet.</p>
         </div>
     </div>
