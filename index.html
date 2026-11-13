@@ -1,45 +1,387 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#087b4b"><title>BidWorld</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#087a45">
+<title>BidWorld</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--g:#087b4b;--gd:#075f3b;--p:#eef7f1;--ink:#1d3329;--muted:#718078;--line:#dce8e0;--red:#a52c32}*{box-sizing:border-box}body{margin:0;background:#f3f8f5;color:var(--ink);font:16px Arial,sans-serif}header{position:sticky;top:0;z-index:5;background:#fff;box-shadow:0 3px 18px #173d2810;padding:16px max(18px,calc((100% - 1050px)/2));display:flex;align-items:center;justify-content:space-between}.brand{font-size:28px;font-weight:800;color:var(--g);letter-spacing:-1px}.wrap{max-width:1050px;margin:26px auto;padding:0 16px}.panel{background:#fff;border-radius:22px;padding:24px;margin:18px 0;box-shadow:0 8px 30px #173d280b;scroll-margin-top:105px}#packagesSection.view-highlight{outline:3px solid #087b4b;outline-offset:3px;transition:outline-color .3s}.hero{background:linear-gradient(120deg,#e5f4e9,#fff);padding:30px;border-radius:22px}.hero h1{font-size:34px;margin:0 0 10px}.muted{color:var(--muted)}button,.btn{border:0;border-radius:12px;padding:13px 18px;background:var(--g);color:#fff;font-size:16px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px}button.secondary,.btn.secondary{background:#e5f3e9;color:var(--gd)}button.danger{background:var(--red)}button:disabled{opacity:.55;cursor:wait}.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}.tile{background:var(--p);padding:20px;border-radius:18px}.tile h3{margin:0 0 10px;color:var(--g)}.tile p{margin:5px 0}.price{font-size:26px;font-weight:800;margin:12px 0}.status{display:inline-block;border-radius:99px;background:#e4f4e9;color:#087b4b;padding:6px 12px;font-size:13px;font-weight:700}.status.draft,.status.inactive,.status.archived{background:#f0f1f0;color:#65716a}label{display:block;font-weight:700;margin:12px 0 6px}input,textarea,select{width:100%;padding:14px;border:1px solid #ccd9d0;border-radius:12px;font:16px Arial;background:white;color:var(--ink)}
-textarea{min-height:90px}.fieldgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}.hidden{display:none!important}.msg{padding:14px 16px;border-radius:12px;margin:14px 0;background:#e5f4e9;color:#145d3d}.msg.error{background:#fdeaea;color:#8e2026}.section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.pkg{border:1px solid var(--line);border-radius:16px;padding:18px;background:#fff}.pkg h3{color:var(--g);margin:0 0 8px}.pkg-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}footer{text-align:center;color:var(--muted);padding:30px 12px}a{color:var(--g)}@media(max-width:560px){.wrap{margin:16px auto}.panel{padding:18px}.hero h1{font-size:28px}header{padding:14px 18px}}
-</style></head>
+*{box-sizing:border-box}
+:root{--green:#087a45;--pale:#e6f3e9;--ink:#20352a;--muted:#718078;--line:#dce8e0}
+body{margin:0;background:#f4f8f5;color:var(--ink);font-family:Arial,sans-serif}
+header{position:sticky;top:0;z-index:5;background:#fff;padding:16px 5%;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 12px #0001}
+.logo{font-size:27px;font-weight:800;color:var(--green)}
+main{max-width:950px;margin:auto;padding:22px 15px}
+button{border:0;border-radius:10px;padding:13px 18px;background:var(--green);color:#fff;font-weight:700;font-size:15px;cursor:pointer}
+button:disabled{opacity:.55;cursor:wait}
+.secondary{background:var(--pale);color:var(--green)}
+.danger{background:#a52c32}
+.hero,.panel{border-radius:18px;padding:25px;margin:18px 0;background:#fff;box-shadow:0 4px 18px #00000008}
+.hero{background:linear-gradient(120deg,#e5f4e9,#f9fcfa);padding:42px 28px}
+.hero h1{font-size:clamp(29px,5vw,42px);margin:12px 0}
+.hero p{font-size:18px;line-height:1.5}
+.eyebrow{color:var(--muted);letter-spacing:.04em}
+h2{font-size:28px;margin:8px 0 18px}
+h3{margin:0 0 10px;color:var(--green)}
+input,textarea,select{width:100%;padding:14px;margin:7px 0 14px;border:1px solid var(--line);border-radius:9px;font-size:16px;background:white;color:var(--ink)}
+textarea{min-height:85px}
+label{display:block;font-weight:700;font-size:14px}
+.hidden{display:none!important}
+.muted{color:var(--muted);font-size:14px;line-height:1.6}
+a{color:var(--green);cursor:pointer}
+#message{display:none;padding:13px;border-radius:9px;margin:12px 0;line-height:1.5;overflow-wrap:anywhere}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.tile{background:#f1f7f3;border-radius:12px;padding:16px}
+.tile h3{font-size:15px}
+.tile p{margin:0;overflow-wrap:anywhere}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0}
+.actions button{flex:1;min-width:130px}
+.package{border:1px solid var(--line);border-radius:12px;padding:16px;margin:12px 0;background:#fff}
+.package .price{font-size:22px;font-weight:800;margin:8px 0}
+.pill{display:inline-block;padding:5px 10px;border-radius:20px;background:var(--pale);color:var(--green);font-size:12px;font-weight:700}
+.form button{width:100%;margin-top:6px}
+footer{text-align:center;padding:25px;color:var(--muted)}
+@media(max-width:480px){.hero{padding:30px 20px}.panel{padding:20px}.hero p{font-size:16px}}
+</style>
+</head>
 <body>
-<header><div class="brand">BidWorld</div><div class="row"><span id="who" class="muted"></span><button id="authBtn" class="secondary" onclick="showAuth()">Login</button><button id="logoutBtn" class="hidden" onclick="logout()">Logout</button></div></header>
-<div class="wrap">
-<div id="notice" class="msg hidden" role="status"></div>
-<section id="authPanel" class="panel hidden"><h2 id="authTitle">Member Login</h2><div id="registerFields" class="hidden"><label>Full Name</label><input id="fullName" autocomplete="name"><label>Mobile Number</label><input id="mobile" inputmode="numeric"><label>Sponsor Member ID (optional)</label><input id="sponsor"></div><label>Email</label><input id="email" type="email" autocomplete="username"><label>Password</label><input id="password" type="password" autocomplete="current-password"><div class="row" style="margin-top:16px"><button id="authSubmit" onclick="submitAuth()">Login</button><button class="secondary" onclick="toggleAuthMode()" id="modeBtn">Create Account</button></div></section>
-<section class="hero"><p class="muted">DISCOVER · BID · WIN</p><h1>Welcome to BidWorld</h1><p>Explore membership packages and manage your account securely.</p><div class="row"><button onclick="openPackages()">Explore Membership Packages</button><button class="secondary" onclick="showAuth()">Member Login</button></div></section>
-<section id="memberPanel" class="panel hidden"><h2>Member Dashboard</h2><p id="memberEmail" class="muted"></p><div class="grid"><div class="tile"><h3>Member ID</h3><p id="memberId">—</p></div><div class="tile"><h3>Account Status</h3><p id="accountStatus">—</p></div><div class="tile"><h3>Membership</h3><p id="membershipStatus">Not activated</p></div><div class="tile"><h3>Bidding Wallet</h3><p>₹0.00</p></div><div class="tile"><h3>Referral Wallet</h3><p>₹0.00</p></div></div></section>
-<section id="adminPanel" class="panel hidden"><h2>Admin Dashboard</h2><div class="section-title"><div><p class="muted">Package Management</p></div><div class="row"><button onclick="showCreate()">Create Package</button><button class="secondary" onclick="openPackages()">View Packages</button></div></div>
-<div id="createPanel" class="panel hidden"><h3>Create Membership Package</h3><form id="packageForm" onsubmit="savePackage(event)"><div class="fieldgrid"><div><label>Package Code</label><input id="pkgCode" required placeholder="BW-PKG-001"></div><div><label>Package Name</label><input id="pkgName" required></div><div><label>Package Price (₹)</label><input id="pkgPrice" type="number" min="0" step="0.01" required></div><div><label>Bidding Wallet Credit (₹)</label><input id="pkgCredit" type="number" min="0" step="0.01" required></div><div><label>Validity (Days)</label><input id="pkgValidity" type="number" min="1" value="365"></div><div><label>Package Status</label><select id="pkgStatus"><option value="draft">Draft</option><option value="active">Active</option><option value="inactive">Inactive</option></select></div></div><label>Description</label><textarea id="pkgDescription"></textarea><div class="row" style="margin-top:14px"><button id="savePkgBtn">Save Package</button><button type="button" class="secondary" onclick="document.getElementById('packageForm').reset()">Clear Form</button></div></form></div>
-</section>
-<section id="packagesSection" class="panel"><div class="section-title"><div><p class="muted">BIDWORLD MEMBERSHIP</p><h2>Membership Packages</h2></div><button class="secondary" onclick="loadPackages()">Refresh</button></div><div id="packagesMessage" class="muted">Loading packages…</div><div id="packageList" class="grid"></div></section>
-<section class="panel"><h2>More BidWorld Features</h2><p class="muted">Auctions, bid history, referral tree, matrix tree, payment activation and withdrawals will be enabled in upcoming development stages.</p></section>
-</div><footer>© 2026 BidWorld. All Rights Reserved.</footer>
+<header>
+  <div class="logo">BidWorld</div>
+  <button id="headerBtn" type="button" class="secondary">Login</button>
+</header>
+
+<main>
+  <section class="hero" id="welcome">
+    <div class="eyebrow">DISCOVER · BID · WIN</div>
+    <h1>Welcome to BidWorld</h1>
+    <p>Explore membership packages and manage your account securely.</p>
+    <div class="actions">
+      <button type="button" id="exploreBtn">Explore Membership Packages</button>
+      <button type="button" class="secondary" id="heroLoginBtn">Member Login</button>
+      <button type="button" class="secondary" id="heroRegisterBtn">Create Free Account</button>
+    </div>
+  </section>
+
+  <div id="message" role="status" aria-live="polite"></div>
+
+  <section class="panel" id="publicPackagesPanel">
+    <div class="eyebrow">BIDWORLD MEMBERSHIP</div>
+    <h2>Membership Packages</h2>
+    <button type="button" class="secondary" id="refreshPublicBtn">Refresh</button>
+    <div id="publicPackageList"><p class="muted">Press Refresh to load packages.</p></div>
+  </section>
+
+  <section class="panel hidden" id="registerPanel">
+    <h2>Create Your Account</h2>
+    <form id="registerForm">
+      <label for="regName">Full Name</label><input id="regName" autocomplete="name" required>
+      <label for="regMobile">Mobile Number</label><input id="regMobile" type="tel" autocomplete="tel" required>
+      <label for="regEmail">Email Address</label><input id="regEmail" type="email" autocomplete="email" required>
+      <label for="regSponsor">Sponsor Referral ID (Optional)</label><input id="regSponsor">
+      <label for="regPassword">Password</label><input id="regPassword" type="password" autocomplete="new-password" minlength="8" required>
+      <label for="regConfirm">Confirm Password</label><input id="regConfirm" type="password" autocomplete="new-password" minlength="8" required>
+      <button id="registerBtn" type="submit">Register</button>
+    </form>
+    <p class="muted">Already registered? <a id="toLogin">Login</a></p>
+  </section>
+
+  <section class="panel hidden" id="loginPanel">
+    <h2>Member Login</h2>
+    <form id="loginForm">
+      <label for="loginEmail">Email Address</label><input id="loginEmail" type="email" autocomplete="username" required>
+      <label for="loginPassword">Password</label><input id="loginPassword" type="password" autocomplete="current-password" required>
+      <button id="loginBtn" type="submit">Login</button>
+    </form>
+    <p class="muted"><a id="forgotBtn">Forgot Password?</a></p>
+    <p class="muted">New member? <a id="toRegister">Create Account</a></p>
+  </section>
+
+  <section class="hidden" id="dashboard">
+    <div class="panel">
+      <h2>Welcome, <span id="memberName">Member</span></h2>
+      <p class="muted" id="memberEmail"></p>
+      <div class="grid">
+        <div class="tile"><h3>Member ID</h3><p id="memberId">—</p></div>
+        <div class="tile"><h3>Account Status</h3><p id="accountStatus">—</p></div>
+        <div class="tile"><h3>Membership</h3><p id="memberMembership">Not activated</p></div>
+        <div class="tile"><h3>Bidding Wallet</h3><p>₹0.00</p></div>
+        <div class="tile"><h3>Referral Wallet</h3><p>₹0.00</p></div>
+      </div>
+    </div>
+
+    <section class="panel hidden" id="adminPanel">
+      <h2>Admin Dashboard</h2>
+      <h3>Membership Package Management</h3>
+      <div class="actions">
+        <button type="button" id="showPackageFormBtn">Create Package</button>
+        <button type="button" class="secondary" id="viewPackagesBtn">View Packages</button>
+      </div>
+      <div id="adminPackageForm" class="hidden">
+        <h3 id="packageFormTitle">Create Membership Package</h3>
+        <input id="editPackageId" type="hidden">
+        <label for="packageCode">Package Code</label><input id="packageCode" placeholder="BW-PKG-001">
+        <label for="packageName">Package Name</label><input id="packageName" placeholder="Package Name">
+        <label for="packagePrice">Package Price (₹)</label><input id="packagePrice" type="number" min="0" step="0.01">
+        <label for="walletCredit">Bidding Wallet Credit (₹)</label><input id="walletCredit" type="number" min="0" step="0.01">
+        <label for="validityDays">Validity (Days)</label><input id="validityDays" type="number" min="1">
+        <label for="packageDescription">Description</label><textarea id="packageDescription"></textarea>
+        <label for="packageStatus">Package Status</label>
+        <select id="packageStatus"><option value="draft">Draft</option><option value="active">Active</option><option value="inactive">Inactive</option></select>
+        <div class="actions">
+          <button type="button" id="savePackageBtn">Save Package</button>
+          <button type="button" class="secondary" id="clearPackageBtn">Clear Form</button>
+        </div>
+      </div>
+      <div id="adminPackageListPanel">
+        <h3>All Membership Packages</h3>
+        <button type="button" class="secondary" id="refreshAdminBtn">Refresh Packages</button>
+        <div id="adminPackageList"><p class="muted">Packages will appear here after loading.</p></div>
+      </div>
+    </section>
+
+    <div class="panel">
+      <h3>More BidWorld Features</h3>
+      <p class="muted">Payment activation, wallets, referrals, matrix, auctions, bidding and winner selection are planned for later development stages. They are not enabled in this version.</p>
+      <button type="button" class="secondary" id="logoutBtn">Logout</button>
+    </div>
+  </section>
+</main>
+<footer>© 2026 BidWorld. All Rights Reserved.</footer>
+
 <script>
+(function(){
+'use strict';
 const SUPABASE_URL='https://mmdkehfsaupivxtkxmaf.supabase.co';
 const SUPABASE_KEY='sb_publishable_KJHTu11C_Qas631_NY5JTA_OUn1Erx2';
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let currentSession=null,isRegister=false,isAdmin=false,editingId=null;
 const $=id=>document.getElementById(id);
-function notify(text,error=false){$('notice').textContent=text;$('notice').classList.remove('hidden','error');if(error)$('notice').classList.add('error');window.scrollTo({top:0,behavior:'smooth'});}
-function showAuth(){ $('authPanel').classList.remove('hidden'); $('authPanel').scrollIntoView({behavior:'smooth'}); }
-function toggleAuthMode(){isRegister=!isRegister;$('authTitle').textContent=isRegister?'Create Account':'Member Login';$('authSubmit').textContent=isRegister?'Register':'Login';$('modeBtn').textContent=isRegister?'Back to Login':'Create Account';$('registerFields').classList.toggle('hidden',!isRegister);}
-async function submitAuth(){const email=$('email').value.trim(),password=$('password').value;if(!email||!password){notify('Enter email and password.',true);return}try{if(isRegister){const {data,error}=await db.auth.signUp({email,password,options:{data:{full_name:$('fullName').value.trim(),mobile_number:$('mobile').value.trim(),sponsor_member_id:$('sponsor').value.trim()||null}}});if(error)throw error;if(data.session){notify('Account created successfully.');}else{notify('Registration submitted. Check your email if confirmation is enabled.');}}else{const {error}=await db.auth.signInWithPassword({email,password});if(error)throw error; $('authPanel').classList.add('hidden');}}catch(e){notify(e.message||'Authentication failed.',true)}}
-async function logout(){await db.auth.signOut();notify('You have logged out.');}
-async function refreshSession(session){currentSession=session;$('authBtn').classList.toggle('hidden',!!session);$('logoutBtn').classList.toggle('hidden',!session);$('who').textContent=session?session.user.email:'';$('memberPanel').classList.add('hidden');$('adminPanel').classList.add('hidden');isAdmin=false;if(session){await loadProfile();}await loadPackages();}
-async function loadProfile(){const {data,error}=await db.from('profiles').select('member_id,full_name,role,account_status').eq('id',currentSession.user.id).maybeSingle();if(error){notify('Profile loading error: '+error.message,true);return}if(!data)return;$('memberPanel').classList.remove('hidden');$('memberEmail').textContent=data.full_name||currentSession.user.email;$('memberId').textContent=data.member_id||'—';$('accountStatus').textContent=data.account_status||'—';isAdmin=data.role==='admin';if(isAdmin)$('adminPanel').classList.remove('hidden');}
-async function openPackages(){const section=$('packagesSection');section.classList.remove('view-highlight');await loadPackages();section.scrollIntoView({behavior:'smooth',block:'start'});section.classList.add('view-highlight');setTimeout(()=>section.classList.remove('view-highlight'),2200);}
-function showCreate(){ $('createPanel').classList.remove('hidden');$('createPanel').scrollIntoView({behavior:'smooth',block:'start'}); }
-async function loadPackages(){const msg=$('packagesMessage'),list=$('packageList');msg.textContent='Loading packages…';list.innerHTML='';let q=db.from('membership_packages').select('id,package_code,package_name,package_price,bidding_wallet_credit,validity_days,description,status,created_at').order('created_at',{ascending:false});if(!isAdmin)q=q.eq('status','active');const {data,error}=await q;if(error){msg.textContent='Could not load packages: '+error.message;return}if(!data||data.length===0){msg.textContent=isAdmin?'No packages yet. Create your first package above.':'No active membership packages are available yet.';return}msg.textContent='';for(const p of data){const card=document.createElement('article');card.className='pkg';const status=document.createElement('span');status.className='status '+p.status;status.textContent=p.status.toUpperCase();const title=document.createElement('h3');title.textContent=p.package_name;const code=document.createElement('p');code.textContent='Code: '+(p.package_code||'—');const price=document.createElement('div');price.className='price';price.textContent='₹'+Number(p.package_price).toLocaleString('en-IN');const credit=document.createElement('p');credit.textContent='Wallet Credit: ₹'+Number(p.bidding_wallet_credit).toLocaleString('en-IN');const validity=document.createElement('p');validity.textContent='Validity: '+(p.validity_days??'No expiry')+' days';card.append(status,title,code,price,credit,validity);if(p.description){const desc=document.createElement('p');desc.textContent=p.description;card.append(desc)}if(isAdmin){const actions=document.createElement('div');actions.className='pkg-actions';const edit=document.createElement('button');edit.className='secondary';edit.textContent='Edit';edit.onclick=()=>editPackage(p);const toggle=document.createElement('button');toggle.className=p.status==='active'?'danger':'secondary';toggle.textContent=p.status==='active'?'Deactivate':'Activate';toggle.onclick=()=>changeStatus(p);actions.append(e
-dit,toggle);card.append(actions)}list.append(card)}}
-async function savePackage(e){e.preventDefault();if(!isAdmin){notify('Admin access required.',true);return}const btn=$('savePkgBtn');btn.disabled=true;try{const payload={package_code:$('pkgCode').value.trim(),package_name:$('pkgName').value.trim(),package_price:Number($('pkgPrice').value),bidding_wallet_credit:Number($('pkgCredit').value),validity_days:$('pkgValidity').value?Number($('pkgValidity').value):null,description:$('pkgDescription').value.trim()||null,status:$('pkgStatus').value};let result;if(editingId){result=await db.from('membership_packages').update(payload).eq('id',editingId)}else{payload.created_by=currentSession.user.id;result=await db.from('membership_packages').insert(payload)}if(result.error)throw result.error;notify(editingId?'Package updated.':'Package created successfully.');editingId=null;$('packageForm').reset();$('createPanel').classList.add('hidden');await loadPackages()}catch(err){notify('Package save failed: '+err.message,true)}finally{btn.disabled=false}}
-function editPackage(p){editingId=p.id;$('pkgCode').value=p.package_code||'';$('pkgName').value=p.package_name;$('pkgPrice').value=p.package_price;$('pkgCredit').value=p.bidding_wallet_credit;$('pkgValidity').value=p.validity_days||'';$('pkgDescription').value=p.description||'';$('pkgStatus').value=p.status==='archived'?'inactive':p.status;showCreate();}
-async function changeStatus(p){const next=p.status==='active'?'inactive':'active';if(!confirm('Change package status to '+next+'?'))return;const {error}=await db.from('membership_packages').update({status:next}).eq('id',p.id);if(error){notify('Status update failed: '+error.message,true);return}notify('Package status updated.');await loadPackages()}
-db.auth.onAuthStateChange((_event,session)=>{setTimeout(()=>refreshSession(session),0)});
-(async()=>{const {data}=await db.auth.getSession();await refreshSession(data.session)})();
-</script></body></html>
+let db=null,currentUser=null,currentProfile=null;
+
+function showMessage(text,isError=false){
+  const box=$('message');
+  box.textContent=text;
+  box.style.display='block';
+  box.style.background=isError?'#ffe8e8':'#e5f5e9';
+  box.style.color=isError?'#a00000':'#086b3b';
+}
+function hideMainSections(){
+  ['registerPanel','loginPanel','dashboard'].forEach(id=>$(id).classList.add('hidden'));
+}
+function showHome(){
+  hideMainSections();
+  $('welcome').classList.remove('hidden');
+  $('publicPackagesPanel').classList.remove('hidden');
+  $('message').style.display='none';
+  $('headerBtn').textContent='Login';
+}
+function showLogin(){
+  hideMainSections();
+  $('welcome').classList.add('hidden');
+  $('publicPackagesPanel').classList.add('hidden');
+  $('loginPanel').classList.remove('hidden');
+  $('message').style.display='none';
+  $('headerBtn').textContent='Home';
+}
+function showRegister(){
+  hideMainSections();
+  $('welcome').classList.add('hidden');
+  $('publicPackagesPanel').classList.add('hidden');
+  $('registerPanel').classList.remove('hidden');
+  $('message').style.display='none';
+  $('headerBtn').textContent='Home';
+}
+function makePackageCard(p,adminMode){
+  const card=document.createElement('article');card.className='package';
+  const title=document.createElement('h3');title.textContent=p.package_name||'Membership Package';
+  const code=document.createElement('p');code.className='muted';code.textContent='Code: '+(p.package_code||'—');
+  const price=document.createElement('p');price.className='price';price.textContent='₹'+Number(p.package_price||0).toLocaleString('en-IN');
+  const credit=document.createElement('p');credit.textContent='Bidding Wallet Credit: ₹'+Number(p.bidding_wallet_credit||0).toLocaleString('en-IN');
+  const validity=document.createElement('p');validity.textContent='Validity: '+(p.validity_days||'Unlimited')+' days';
+  const status=document.createElement('span');status.className='pill';status.textContent=String(p.status||'active').toUpperCase();
+  card.append(title,code,price,credit,validity);
+  if(p.description){const desc=document.createElement('p');desc.className='muted';desc.textContent=p.description;card.append(desc);}
+  if(adminMode){
+    card.append(status);
+    const row=document.createElement('div');row.className='actions';
+    const edit=document.createElement('button');edit.type='button';edit.className='secondary';edit.textContent='Edit';
+    edit.addEventListener('click',()=>editPackage(p));
+    const toggle=document.createElement('button');toggle.type='button';toggle.className=p.status==='active'?'danger':'secondary';
+    toggle.textContent=p.status==='active'?'Deactivate':'Activate';
+    toggle.addEventListener('click',()=>togglePackage(p));
+    row.append(edit,toggle);card.append(row);
+  }
+  return card;
+}
+async function loadPublicPackages(){
+  const target=$('publicPackageList');
+  target.textContent='Loading packages...';
+  try{
+    const {data,error}=await db.from('membership_packages')
+      .select('id,package_code,package_name,package_price,bidding_wallet_credit,validity_days,description,status')
+      .eq('status','active').order('package_price',{ascending:true});
+    if(error)throw error;
+    target.replaceChildren();
+    if(!data||data.length===0){target.textContent='No active packages available currently.';return;}
+    data.forEach(p=>target.append(makePackageCard(p,false)));
+  }catch(e){target.textContent='Could not load packages: '+(e.message||'Please try again.');}
+}
+async function loadAdminPackages(){
+  if(!currentProfile||currentProfile.role!=='admin'){showMessage('Admin access required.',true);return;}
+  const target=$('adminPackageList');
+  target.textContent='Loading packages...';
+  try{
+    const {data,error}=await db.from('membership_packages').select('*').order('created_at',{ascending:false});
+    if(error)throw error;
+    target.replaceChildren();
+    if(!data||data.length===0){target.textContent='No packages created yet.';return;}
+    data.forEach(p=>target.append(makePackageCard(p,true)));
+  }catch(e){target.textContent='Could not load packages: '+(e.message||'Please try again.');showMessage('Package loading error: '+e.message,true);}
+}
+async function loadDashboard(user){
+  hideMainSections();$('welcome').classList.add('hidden');$('publicPackagesPanel').classList.add('hidden');
+  showMessage('Loading your profile...');
+  try{
+    const {data:profile,error}=await db.from('profiles').select('*').eq('id',user.id).maybeSingle();
+    if(error)throw error;
+    if(!profile)throw new Error('Member profile not found. Please contact support.');
+    currentUser=user;currentProfile=profile;
+    $('memberName').textContent=profile.full_name||'Member';
+    $('memberEmail').textContent=user.email||'';
+    $('memberId').textContent=profile.member_id||'Pending';
+    $('accountStatus').textContent=profile.account_status||'Unknown';
+    $('dashboard').classList.remove('hidden');
+    $('headerBtn').textContent='Logout';
+    if(profile.role==='admin'){
+      $('adminPanel').classList.remove('hidden');
+      await loadAdminPackages();
+    }else{
+      $('adminPanel').classList.add('hidden');
+    }
+    showMessage('Your member dashboard is ready.');
+  }catch(e){
+    currentUser=null;currentProfile=null;
+    showLogin();showMessage('Profile loading error: '+e.message,true);
+  }
+}
+async function registerUser(ev){
+  ev.preventDefault();
+  const name=$('regName').value.trim(),mobile=$('regMobile').value.trim(),email=$('regEmail').value.trim();
+  const sponsor=$('regSponsor').value.trim(),password=$('regPassword').value,confirm=$('regConfirm').value;
+  if(!/^[0-9]{10,15}$/.test(mobile)){showMessage('Enter a valid mobile number.',true);return;}
+  if(password.length<8){showMessage('Password must contain at least 8 characters.',true);return;}
+  if(password!==confirm){showMessage('Passwords do not match.',true);return;}
+  const btn=$('registerBtn');btn.disabled=true;btn.textContent='Creating Account...';
+  try{
+    const {data,error}=await db.auth.signUp({email,password,options:{data:{full_name:name,mobile_number:mobile,sponsor_referral_id:sponsor||null}}});
+    if(error)throw error;
+    if(data.session){await loadDashboard(data.user);}
+    else{showLogin();$('loginEmail').value=email;showMessage('Registration submitted. Confirm your email, then log in.');}
+  }catch(e){showMessage(e.message||'Registration failed.',true);}
+  finally{btn.disabled=false;btn.textContent='Register';}
+}
+async function loginUser(ev){
+  ev.preventDefault();
+  const email=$('loginEmail').value.trim(),password=$('loginPassword').value;
+  const btn=$('loginBtn');btn.disabled=true;btn.textContent='Signing in...';
+  try{
+    const {data,error}=await db.auth.signInWithPassword({email,password});
+    if(error)throw error;
+    await loadDashboard(data.user);
+  }catch(e){showMessage(e.message||'Login failed.',true);}
+  finally{btn.disabled=false;btn.textContent='Login';}
+}
+async function logoutUser(){
+  const {error}=await db.auth.signOut();
+  if(error){showMessage(error.message,true);return;}
+  currentUser=null;currentProfile=null;showHome();showMessage('You have logged out successfully.');
+}
+async function resetPassword(){
+  const email=$('loginEmail').value.trim();
+  if(!email){showMessage('Enter your email address first.',true);return;}
+  try{
+    const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
+    if(error)throw error;
+    showMessage('Password reset instructions sent to your email.');
+  }catch(e){showMessage(e.message,true);}
+}
+function clearPackageForm(){
+  $('editPackageId').value='';$('packageCode').value='';$('packageName').value='';
+  $('packagePrice').value='';$('walletCredit').value='';$('validityDays').value='';
+  $('packageDescription').value='';$('packageStatus').value='draft';
+  $('packageFormTitle').textContent='Create Membership Package';$('savePackageBtn').textContent='Save Package';
+}
+function editPackage(p){
+  $('editPackageId').value=p.id;$('packageCode').value=p.package_code||'';
+  $('packageName').value=p.package_name||'';$('packagePrice').value=p.package_price;
+  $('walletCredit').value=p.bidding_wallet_credit;$('validityDays').value=p.validity_days||'';
+  $('packageDescription').value=p.description||'';$('packageStatus').value=p.status||'draft';
+  $('packageFormTitle').textContent='Edit Membership Package';$('savePackageBtn').textContent='Update Package';
+  $('adminPackageForm').classList.remove('hidden');
+  $('adminPackageForm').scrollIntoView({behavior:'smooth',block:'start'});
+}
+async function savePackage(){
+  if(!currentUser||!currentProfile||currentProfile.role!=='admin'){showMessage('Admin access required.',true);return;}
+  const id=$('editPackageId').value,code=$('packageCode').value.trim(),name=$('packageName').value.trim();
+  const priceText=$('packagePrice').value,creditText=$('walletCredit').value,validityText=$('validityDays').value;
+  const price=Number(priceText),credit=Number(creditText);
+  if(!code||!name||priceText===''||creditText===''){showMessage('Enter package code, name, price and wallet credit.',true);return;}
+  if(!Number.isFinite(price)||!Number.isFinite(credit)||price<0||credit<0){showMessage('Enter valid non-negative amounts.',true);return;}
+  if(validityText!==''&&(!Number.isInteger(Number(validityText))||Number(validityText)<=0)){showMessage('Validity must be a positive whole number.',true);return;}
+  const record={package_code:code,package_name:name,package_price:price,bidding_wallet_credit:credit,
+    validity_days:validityText===''?null:Number(validityText),description:$('packageDescription').value.trim()||null,status:$('packageStatus').value};
+  const btn=$('savePackageBtn');btn.disabled=true;btn.textContent='Saving...';
+  try{
+    let result;
+    if(id){result=await db.from('membership_packages').update(record).eq('id',id);}
+    else{record.created_by=currentUser.id;result=await db.from('membership_packages').insert(record);}
+    if(result.error)throw result.error;
+    showMessage(id?'Package updated successfully.':'Package created successfully.');
+    clearPackageForm();$('adminPackageForm').classList.add('hidden');
+    await loadAdminPackages();await loadPublicPackages();
+  }catch(e){showMessage('Package save failed: '+e.message,true);}
+  finally{btn.disabled=false;btn.textContent='Save Package';}
+}
+async function togglePackage(p){
+  if(!currentProfile||currentProfile.role!=='admin'){showMessage('Admin access required.',true);return;}
+  const newStatus=p.status==='active'?'inactive':'active';
+  try{
+    const {error}=await db.from('membership_packages').update({status:newStatus}).eq('id',p.id);
+    if(error)throw error;
+    showMessage('Package status changed to '+newStatus+'.');
+    await loadAdminPackages();await loadPublicPackages();
+  }catch(e){showMessage('Status update failed: '+e.message,true);}
+}
+function bind(){
+  $('headerBtn').addEventListener('click',()=>currentUser?logoutUser():showLogin());
+  $('heroLoginBtn').addEventListener('click',showLogin);
+  $('heroRegisterBtn').addEventListener('click',showRegister);
+  $('exploreBtn').addEventListener('click',()=>{$('publicPackagesPanel').scrollIntoView({behavior:'smooth'});loadPublicPackages();});
+  $('refreshPublicBtn').addEventListener('click',loadPublicPackages);
+  $('registerForm').addEventListener('submit',registerUser);
+  $('loginForm').addEventListener('submit',loginUser);
+  $('toLogin').addEventListener('click',showLogin);$('toRegister').addEventListener('click',showRegister);
+  $('forgotBtn').addEventListener('click',resetPassword);
+  $('logoutBtn').addEventListener('click',logoutUser);
+  $('showPackageFormBtn').addEventListener('click',()=>{$('adminPackageForm').classList.remove('hidden');clearPackageForm();$('adminPackageForm').scrollIntoView({behavior:'smooth'});});
+  $('viewPackagesBtn').addEventListener('click',async()=>{$('adminPackageForm').classList.add('hidden');$('adminPackageListPanel').scrollIntoView({behavior:'smooth'});await loadAdminPackages();});
+  $('refreshAdminBtn').addEventListener('click',loadAdminPackages);
+  $('savePackageBtn').addEventListener('click',savePackage);
+  $('clearPackageBtn').addEventListener('click',clearPackageForm);
+}
+async function start(){
+  bind();
+  if(!window.supabase||!window.supabase.createClient){showMessage('Supabase library did not load. Check your internet connection and refresh.',true);return;}
+  db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  await loadPublicPackages();
+  const {data,error}=await db.auth.getSession();
+  if(error){showMessage('Authentication error: '+error.message,true);return;}
+  if(data.session)await loadDashboard(data.session.user);
+  db.auth.onAuthStateChange((event,session)=>{
+    if(event==='SIGNED_OUT'){currentUser=null;currentProfile=null;showHome();}
+  });
+}
+document.addEventListener('DOMContentLoaded',start);
+})();
+</script>
+</body>
+</html>
