@@ -107,7 +107,10 @@ footer{text-align:center;padding:25px;color:var(--muted)}
         <div class="tile"><h3>Membership</h3><p id="memberMembership">Not activated</p></div>
         <div class="tile"><h3>Bidding Wallet</h3><p>₹0.00</p></div>
         <div class="tile"><h3>Referral Wallet</h3><p>₹0.00</p></div>
+        <div class="tile"><h3>Your Referral ID</h3><p id="myReferralId">—</p></div>
+        <div class="tile"><h3>Direct Referrals</h3><p id="directReferralCount">0</p></div>
       </div>
+      <p class="muted">Share your Referral ID with a new member. They can enter it during registration.</p>
     </div>
 
     <section class="panel hidden" id="adminPanel">
@@ -248,7 +251,11 @@ async function loadDashboard(user){
     $('memberName').textContent=profile.full_name||'Member';
     $('memberEmail').textContent=user.email||'';
     $('memberId').textContent=profile.member_id||'Pending';
+    $('myReferralId').textContent=profile.member_id||'Pending';
     $('accountStatus').textContent=profile.account_status||'Unknown';
+    const {count:referralCount,error:referralCountError}=await db.from('referrals')
+      .select('id',{count:'exact',head:true}).eq('sponsor_id',user.id);
+    $('directReferralCount').textContent=referralCountError?'—':String(referralCount||0);
     $('dashboard').classList.remove('hidden');
     $('headerBtn').textContent='Logout';
     if(profile.role==='admin'){
