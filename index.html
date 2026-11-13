@@ -115,6 +115,17 @@ footer{text-align:center;padding:25px;color:var(--muted)}
       <p class="muted">Share your Referral ID with a new member. They can enter it during registration.</p>
     </div>
 
+    <section class="panel" id="auctionPanel">
+      <h2>Live Auctions</h2>
+      <p class="muted">Bidding requires an active membership and sufficient Bidding Wallet balance. Each accepted bid receives a unique ticket ID.</p>
+      <button type="button" class="secondary" id="refreshAuctionsBtn">Refresh Auctions</button>
+      <div id="liveAuctions"><p class="muted">Loading auctions...</p></div>
+      <h3>My Bid History</h3>
+      <div id="myBidHistory"><p class="muted">Loading bid history...</p></div>
+      <h3>Announced Winners</h3>
+      <div id="winnerAnnouncements"><p class="muted">Loading winners...</p></div>
+    </section>
+
     <section class="panel" id="membershipActivationPanel">
       <h2>Membership Activation</h2>
       <p class="muted">Choose an active package, make payment using the displayed company payment details, then submit the UTR/reference number. Membership activates only after admin approval.</p>
@@ -175,8 +186,31 @@ footer{text-align:center;padding:25px;color:var(--muted)}
     </section>
 
     <div class="panel">
-      <h3>More BidWorld Features</h3>
-      <p class="muted">Payment activation, wallets, referrals, matrix, auctions, bidding and winner selection are planned for later development stages. They are not enabled in this version.</p>
+      <h3>Product Catalogue</h3>
+      <label for="productTitle">Product Title</label><input id="productTitle">
+      <label for="productDescription">Product Description</label><textarea id="productDescription"></textarea>
+      <label for="productImages">Image URLs (one per line, maximum 3)</label><textarea id="productImages"></textarea>
+      <button type="button" id="saveProductBtn">Save Product</button>
+      <div id="adminProducts"></div>
+      <hr>
+      <h3>Auction Management</h3>
+      <label for="auctionProduct">Product</label><select id="auctionProduct"></select>
+      <label for="auctionCode">Auction Code</label><input id="auctionCode" placeholder="BW-AUC-001">
+      <label for="auctionStart">Start Date & Time</label><input id="auctionStart" type="datetime-local">
+      <label for="auctionEnd">End Date & Time</label><input id="auctionEnd" type="datetime-local">
+      <label for="auctionStartingBid">Starting Bid (₹)</label><input id="auctionStartingBid" type="number" min="0" step="0.01">
+      <label for="auctionIncrement">Bid Increment (₹)</label><input id="auctionIncrement" type="number" min="0.01" step="0.01">
+      <button type="button" id="saveAuctionBtn">Create Auction</button>
+      <div id="adminAuctions"></div>
+      <hr>
+      <h3>Winner Selection</h3>
+      <label for="winnerAuction">Auction</label><select id="winnerAuction"></select>
+      <label for="winnerMethod">Selection Method</label>
+      <select id="winnerMethod"><option value="random_draw">Random Draw (after auction ends)</option><option value="special_selection">Special Selection</option></select>
+      <label for="winnerTicket">Winning Ticket ID (Special Selection only)</label><input id="winnerTicket">
+      <label for="winnerReason">Selection Reason</label><textarea id="winnerReason"></textarea>
+      <button type="button" id="selectWinnerBtn">Select & Announce Winner</button>
+      <hr>
       <button type="button" class="secondary" id="logoutBtn">Logout</button>
     </div>
   </section>
@@ -289,6 +323,8 @@ async function loadDashboard(user){
     $('directReferralCount').textContent=referralCountError?'—':String(referralCount||0);
     $('dashboard').classList.remove('hidden');
     $('membershipActivationPanel').classList.remove('hidden');
+    $('auctionPanel').classList.remove('hidden');
+    await loadLiveAuctions();await loadMyBids();await loadWinners();
     await loadActivationPanel();
     $('headerBtn').textContent='Logout';
     if(profile.role==='admin'){
@@ -511,6 +547,140 @@ async function reviewActivation(id,decision){
     await loadAdminActivationQueue();
   }catch(e){showMessage('Review failed: '+e.message,true);}
 }
+async function loadAdminProducts(){
+  if(!currentProfile||currentProfile.role!=='admin')return;
+  const target=$('adminProducts');target.textContent='Loading products...';
+  try{
+    const {data,error}=await db.from('products').select('id,title,status').order('created_at',{ascending:false});
+    if(error)throw error;
+    target.replaceChildren();
+    const sel=$('auctionProduct');sel.replaceChildren();
+    if(!data||!data.length){target.textContent='No products yet.';sel.add(new Option('Create a product first',''));return;}
+    data.forEach(p=>{
+      const op=new Option(`${p.title} (${p.status})`,p.id);sel.add(op);
+      const card=document.createElement('article');card.className='package';
+      const h=document.createElement('h3');h.textContent=p.title;
+      const st=document.createElement('span');st.className='pill';st.textContent=p.status.toUpperCase();
+      card.append(h,st);target.append(card);
+    });
+  }catch(e){target.textContent='Product load failed: '+e.message;}
+}
+async function saveProduct(){
+  if(!currentProfile||currentProfile.role!=='admin'){showMessage('Admin access required.',true);return;}
+  const title=$('productTitle').value.trim(),description=$('productDescription').value.trim();
+  const images=$('productImages').value.split('\\n').map(x=>x.trim()).filter(Boolean).slice(0,3);
+  if(!title||!description){showMessage('Enter product title and description.',true);return;}
+  try{
+    const {error}=await db.from('products').insert({title,description,image_paths:images,status:'published',created_by:currentUser.id});
+    if(error)throw error;
+    $('productTitle').value='';$('productDescription').value='';$('productImages').value='';
+    showMessage('Product published.');await loadAdminProducts();
+  }catch(e){showMessage('Product save failed: '+e.message,true);}
+}
+async function saveAuction(){
+  if(!currentProfile||currentProfile.role!=='admin'){showMessage('Admin access required.',true);return;}
+  const product=$('auctionProduct').value,code=$('auctionCode').value.trim();
+  const start=$('auctionStart').value,end=$('auctionEnd').value;
+  const first=Number($('auctionStartingBid').value),increment=Number($('auctionIncrement').value);
+  if(!product||!code||!start||!end||!Number.isFinite(first)||first<0||!Number.isFinite(increment)||increment<=0){showMessage('Complete all auction fields with valid values.',true);return;}
+  if(new Date(end)<=new Date(start)){showMessage('Auction end must be after start.',true);return;}
+  try{
+    const {error}=await db.from('auctions').insert({
+      auction_code:code,product_id:product,starts_at:new Date(start).toISOString(),
+      ends_at:new Date(end).toISOString(),starting_bid:first,current_bid:first,
+      bid_increment:increment,status:new Date(start)>new Date()?'scheduled':'active',created_by:currentUser.id
+    });
+    if(error)throw error;
+    showMessage('Auction created.');await loadAdminAuctions();await loadLiveAuctions();
+  }catch(e){showMessage('Auction creation failed: '+e.message,true);}
+}
+async function loadAdminAuctions(){
+  if(!currentProfile||currentProfile.role!=='admin')return;
+  const target=$('adminAuctions');target.textContent='Loading auctions...';
+  try{
+    const {data,error}=await db.from('auctions').select('id,auction_code,status,current_bid,ends_at,products(title)').order('created_at',{ascending:false});
+    if(error)throw error;
+    target.replaceChildren();$('winnerAuction').replaceChildren();
+    if(!data||!data.length){target.textContent='No auctions created yet.';return;}
+    data.forEach(a=>{
+      $('winnerAuction').add(new Option(`${a.auction_code} — ${a.status}`,a.id));
+      const card=document.createElement('article');card.className='package';
+      const h=document.createElement('h3');h.textContent=a.auction_code+' · '+(a.products?.title||'Product');
+      const p=document.createElement('p');p.textContent=`Status: ${a.status} · Current bid: ₹${Number(a.current_bid).toLocaleString('en-IN')} · Ends: ${new Date(a.ends_at).toLocaleString()}`;
+      card.append(h,p);target.append(card);
+    });
+  }catch(e){target.textContent='Auction load failed: '+e.message;}
+}
+async function loadLiveAuctions(){
+  const target=$('liveAuctions');target.textContent='Loading auctions...';
+  try{
+    const now=new Date().toISOString();
+    const {data,error}=await db.from('auctions').select('id,auction_code,starts_at,ends_at,starting_bid,current_bid,bid_increment,status,products(title,description,image_paths)')
+      .in('status',['scheduled','active','paused']).order('starts_at');
+    if(error)throw error;
+    target.replaceChildren();
+    if(!data||!data.length){target.textContent='No live or upcoming auctions.';return;}
+    data.forEach(a=>{
+      const card=document.createElement('article');card.className='package';
+      const h=document.createElement('h3');h.textContent=a.products?.title||a.auction_code;
+      const p=document.createElement('p');p.textContent=`${a.auction_code} · ${a.status.toUpperCase()} · Current bid ₹${Number(a.current_bid).toLocaleString('en-IN')} · Next bid ₹${(Number(a.current_bid)+Number(a.bid_increment)).toLocaleString('en-IN')}`;
+      const time=document.createElement('p');time.className='muted';time.textContent=`Starts: ${new Date(a.starts_at).toLocaleString()} · Ends: ${new Date(a.ends_at).toLocaleString()}`;
+      card.append(h,p,time);
+      if(a.products?.description){const d=document.createElement('p');d.textContent=a.products.description;card.append(d);}
+      if(a.products?.image_paths?.[0]){const im=document.createElement('img');im.src=a.products.image_paths[0];im.alt=a.products.title||'Auction product';im.style='width:100%;max-height:220px;object-fit:contain;border-radius:10px';card.append(im);}
+      const bid=document.createElement('button');bid.textContent='Place Next Bid';bid.disabled=a.status!=='active'||new Date(a.starts_at)>new Date()||new Date(a.ends_at)<=new Date();
+      bid.addEventListener('click',()=>placeBid(a.id,Number(a.current_bid)+Number(a.bid_increment)));
+      card.append(bid);target.append(card);
+    });
+  }catch(e){target.textContent='Could not load auctions: '+e.message;}
+}
+async function placeBid(auctionId,amount){
+  if(!confirm(`Place bid of ₹${amount.toLocaleString('en-IN')}? This amount will be deducted from your Bidding Wallet if accepted.`))return;
+  try{
+    const {data,error}=await db.rpc('place_auction_bid',{p_auction_id:auctionId,p_bid_amount:amount});
+    if(error)throw error;
+    showMessage(`Bid accepted. Your ticket ID: ${data.ticket_id}`);
+    await loadLiveAuctions();await loadMyBids();
+  }catch(e){showMessage('Bid failed: '+e.message,true);}
+}
+async function loadMyBids(){
+  if(!currentUser)return;
+  const target=$('myBidHistory');target.textContent='Loading...';
+  try{
+    const {data,error}=await db.from('bids').select('bid_ticket_id,bid_amount,status,placed_at,auctions(auction_code)').eq('member_id',currentUser.id).order('placed_at',{ascending:false}).limit(50);
+    if(error)throw error;
+    target.replaceChildren();
+    if(!data||!data.length){target.textContent='No bids yet.';return;}
+    data.forEach(b=>{const p=document.createElement('p');p.className='package';p.textContent=`${b.bid_ticket_id} · ${b.auctions?.auction_code||''} · ₹${Number(b.bid_amount).toLocaleString('en-IN')} · ${b.status} · ${new Date(b.placed_at).toLocaleString()}`;target.append(p);});
+  }catch(e){target.textContent='Bid history unavailable: '+e.message;}
+}
+async function loadWinners(){
+  const target=$('winnerAnnouncements');target.textContent='Loading...';
+  try{
+    const {data,error}=await db.from('auction_winner_announcements').select('auction_code,product_title,image_paths,member_id,winner_name,winning_ticket_id,selection_method,announced_at').order('announced_at',{ascending:false}).limit(30);
+    if(error)throw error;
+    target.replaceChildren();
+    if(!data||!data.length){target.textContent='No winners announced yet.';return;}
+    data.forEach(w=>{const c=document.createElement('article');c.className='package';if(w.image_paths?.[0]){const im=document.createElement('img');im.src=w.image_paths[0];im.alt=w.product_title||'Auction prize';im.style='width:100%;max-height:200px;object-fit:contain;border-radius:10px';c.append(im);}const h=document.createElement('h3');h.textContent=w.winner_name||w.member_id||'Winner';const p=document.createElement('p');p.textContent=`${w.auction_code||''} · ${w.product_title||''} · Member ${w.member_id||''} · Ticket ${w.winning_ticket_id} · ${w.selection_method==='special_selection'?'Special Selection':'Random Draw'}`;c.append(h,p);target.append(c);});
+  }catch(e){target.textContent='Winner list unavailable: '+e.message;}
+}
+async function selectWinner(){
+  if(!currentProfile||currentProfile.role!=='admin'){showMessage('Admin access required.',true);return;}
+  const auction=$('winnerAuction').value,method=$('winnerMethod').value;
+  const ticket=$('winnerTicket').value.trim(),reason=$('winnerReason').value.trim();
+  if(!auction){showMessage('Select an auction.',true);return;}
+  if(method==='special_selection'&&(!ticket||!reason)){showMessage('Special Selection requires a winning ticket ID and reason.',true);return;}
+  if(method==='random_draw'&&!confirm('Confirm random draw for this ended auction?'))return;
+  try{
+    const {data,error}=await db.rpc('admin_select_auction_winner',{
+      p_auction_id:auction,p_method:method,p_ticket_id:ticket||null,p_reason:reason||null
+    });
+    if(error)throw error;
+    showMessage('Winner announced: '+data.winning_ticket_id);
+    $('winnerTicket').value='';$('winnerReason').value='';
+    await loadAdminAuctions();await loadWinners();
+  }catch(e){showMessage('Winner selection failed: '+e.message,true);}
+}
 function bind(){
   $('headerBtn').addEventListener('click',()=>currentUser?logoutUser():showLogin());
   $('heroLoginBtn').addEventListener('click',showLogin);
@@ -525,8 +695,12 @@ function bind(){
   $('activationForm').addEventListener('submit',submitActivation);
   $('savePaymentSettingsBtn').addEventListener('click',savePaymentSettings);
   $('refreshActivationQueueBtn').addEventListener('click',loadAdminActivationQueue);
+  $('saveProductBtn').addEventListener('click',saveProduct);
+  $('saveAuctionBtn').addEventListener('click',saveAuction);
+  $('refreshAuctionsBtn').addEventListener('click',loadLiveAuctions);
+  $('selectWinnerBtn').addEventListener('click',selectWinner);
   $('showPackageFormBtn').addEventListener('click',()=>{$('adminPackageForm').classList.remove('hidden');clearPackageForm();$('adminPackageForm').scrollIntoView({behavior:'smooth'});});
-  $('viewPackagesBtn').addEventListener('click',async()=>{$('adminPackageForm').classList.add('hidden');$('adminPackageListPanel').scrollIntoView({behavior:'smooth'});await loadAdminPackages();await loadAdminActivationQueue();});
+  $('viewPackagesBtn').addEventListener('click',async()=>{$('adminPackageForm').classList.add('hidden');$('adminPackageListPanel').scrollIntoView({behavior:'smooth'});await loadAdminPackages();await loadAdminActivationQueue();await loadAdminProducts();await loadAdminAuctions();});
   $('refreshAdminBtn').addEventListener('click',loadAdminPackages);
   $('savePackageBtn').addEventListener('click',savePackage);
   $('clearPackageBtn').addEventListener('click',clearPackageForm);
