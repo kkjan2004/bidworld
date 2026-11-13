@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#087a45">
 <title>BidWorld</title>
+<meta name="description" content="BidWorld membership and auction platform">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}
@@ -39,6 +40,7 @@ a{color:var(--green);cursor:pointer}
 .actions button{flex:1;min-width:130px}
 .package{border:1px solid var(--line);border-radius:12px;padding:16px;margin:12px 0;background:#fff}
 .package .price{font-size:22px;font-weight:800;margin:8px 0}
+hr{border:0;border-top:1px solid var(--line);margin:22px 0}
 .pill{display:inline-block;padding:5px 10px;border-radius:20px;background:var(--pale);color:var(--green);font-size:12px;font-weight:700}
 .form button{width:100%;margin-top:6px}
 footer{text-align:center;padding:25px;color:var(--muted)}
@@ -113,6 +115,21 @@ footer{text-align:center;padding:25px;color:var(--muted)}
       <p class="muted">Share your Referral ID with a new member. They can enter it during registration.</p>
     </div>
 
+    <section class="panel" id="membershipActivationPanel">
+      <h2>Membership Activation</h2>
+      <p class="muted">Choose an active package, make payment using the displayed company payment details, then submit the UTR/reference number. Membership activates only after admin approval.</p>
+      <label for="activationPackage">Select Membership Package</label>
+      <select id="activationPackage"><option value="">Loading packages...</option></select>
+      <div id="paymentInstructions" class="package"><p class="muted">Payment instructions will appear here.</p></div>
+      <form id="activationForm">
+        <label for="activationUtr">Bank UTR / UPI Reference Number</label>
+        <input id="activationUtr" required maxlength="100" placeholder="Enter exact payment reference">
+        <button id="submitActivationBtn" type="submit">Submit Payment for Review</button>
+      </form>
+      <h3>My Activation Requests</h3>
+      <div id="myActivationRequests"><p class="muted">Loading requests...</p></div>
+    </section>
+
     <section class="panel hidden" id="adminPanel">
       <h2>Admin Dashboard</h2>
       <h3>Membership Package Management</h3>
@@ -141,6 +158,20 @@ footer{text-align:center;padding:25px;color:var(--muted)}
         <button type="button" class="secondary" id="refreshAdminBtn">Refresh Packages</button>
         <div id="adminPackageList"><p class="muted">Packages will appear here after loading.</p></div>
       </div>
+      <hr>
+      <h3>Payment Instructions</h3>
+      <p class="muted">Only enter official company payment details. These details are visible to signed-in members.</p>
+      <label for="payBankName">Bank Name</label><input id="payBankName">
+      <label for="payAccountHolder">Account Holder</label><input id="payAccountHolder">
+      <label for="payAccountNumber">Account Number</label><input id="payAccountNumber">
+      <label for="payIfsc">IFSC</label><input id="payIfsc">
+      <label for="payBranch">Branch</label><input id="payBranch">
+      <label for="payUpi">UPI ID</label><input id="payUpi">
+      <button type="button" id="savePaymentSettingsBtn">Save Payment Instructions</button>
+      <hr>
+      <h3>Activation Review Queue</h3>
+      <button type="button" class="secondary" id="refreshActivationQueueBtn">Refresh Requests</button>
+      <div id="adminActivationQueue"><p class="muted">Loading requests...</p></div>
     </section>
 
     <div class="panel">
@@ -257,6 +288,8 @@ async function loadDashboard(user){
       .select('id',{count:'exact',head:true}).eq('sponsor_id',user.id);
     $('directReferralCount').textContent=referralCountError?'—':String(referralCount||0);
     $('dashboard').classList.remove('hidden');
+    $('membershipActivationPanel').classList.remove('hidden');
+    await loadActivationPanel();
     $('headerBtn').textContent='Logout';
     if(profile.role==='admin'){
       $('adminPanel').classList.remove('hidden');
@@ -358,6 +391,126 @@ async function togglePackage(p){
     await loadAdminPackages();await loadPublicPackages();
   }catch(e){showMessage('Status update failed: '+e.message,true);}
 }
+async function loadActivationPanel(){
+  if(!currentUser)return;
+  const sel=$('activationPackage');
+  try{
+    const [{data:packages,error:pe},{data:settings,error:se}] = await Promise.all([
+      db.from('membership_packages').select('id,package_name,package_price,bidding_wallet_credit,validity_days').eq('status','active').order('package_price'),
+      db.from('payment_settings').select('bank_name,account_holder,account_number,ifsc_code,branch_name,upi_id').eq('is_active',true).order('updated_at',{ascending:false}).limit(1).maybeSingle()
+    ]);
+    if(pe)throw pe;if(se)throw se;
+    sel.replaceChildren();
+    if(!packages||!packages.length){sel.add(new Option('No active packages available',''));} 
+    else packages.forEach(p=>sel.add(new Option(`${p.package_name} — ₹${Number(p.package_price).toLocaleString('en-IN')}`,p.id)));
+    $('paymentInstructions').replaceChildren();
+    if(settings){
+      const lines=[
+        ['Bank',settings.bank_name],['Account Holder',settings.account_holder],
+        ['Account Number',settings.account_number],['IFSC',settings.ifsc_code],
+        ['Branch',settings.branch_name],['UPI ID',settings.upi_id]
+      ].filter(x=>x[1]);
+      if(lines.length){lines.forEach(x=>{const p=document.createElement('p');p.textContent=x[0]+': '+x[1];$('paymentInstructions').append(p);});}
+      else $('paymentInstructions').textContent='Payment instructions are not configured yet.';
+    }else $('paymentInstructions').textContent='Admin has not configured payment instructions yet.';
+    await loadMyActivationRequests();
+  }catch(e){$('paymentInstructions').textContent='Could not load payment instructions: '+e.message;}
+}
+async function loadMyActivationRequests(){
+  if(!currentUser)return;
+  const target=$('myActivationRequests');target.textContent='Loading...';
+  try{
+    const {data,error}=await db.from('activation_requests')
+      .select('id,payment_amount,utr_reference,status,review_notes,submitted_at,membership_packages(package_name)')
+      .eq('member_id',currentUser.id).order('submitted_at',{ascending:false});
+    if(error)throw error;
+    target.replaceChildren();
+    if(!data||!data.length){target.textContent='No activation requests yet.';return;}
+    data.forEach(r=>{
+      const card=document.createElement('article');card.className='package';
+      const h=document.createElement('h3');h.textContent=r.membership_packages?.package_name||'Membership request';
+      const p=document.createElement('p');p.textContent=`₹${Number(r.payment_amount).toLocaleString('en-IN')} · UTR ${r.utr_reference}`;
+      const s=document.createElement('span');s.className='pill';s.textContent=r.status.toUpperCase();
+      card.append(h,p,s);
+      if(r.review_notes){const n=document.createElement('p');n.className='muted';n.textContent='Admin note: '+r.review_notes;card.append(n);}
+      target.append(card);
+    });
+  }catch(e){target.textContent='Could not load requests: '+e.message;}
+}
+async function submitActivation(ev){
+  ev.preventDefault();
+  if(!currentUser){showMessage('Please log in first.',true);return;}
+  const packageId=$('activationPackage').value,utr=$('activationUtr').value.trim();
+  if(!packageId||!utr){showMessage('Select a package and enter the UTR/reference number.',true);return;}
+  const {data:pkg,error:pe}=await db.from('membership_packages').select('package_price').eq('id',packageId).eq('status','active').single();
+  if(pe){showMessage(pe.message,true);return;}
+  const btn=$('submitActivationBtn');btn.disabled=true;btn.textContent='Submitting...';
+  try{
+    const {error}=await db.from('activation_requests').insert({
+      member_id:currentUser.id,package_id:packageId,payment_amount:pkg.package_price,
+      utr_reference:utr,status:'pending'
+    });
+    if(error)throw error;
+    $('activationUtr').value='';
+    showMessage('Payment reference submitted. Membership remains pending until admin approval.');
+    await loadMyActivationRequests();
+  }catch(e){showMessage('Submission failed: '+e.message,true);}
+  finally{btn.disabled=false;btn.textContent='Submit Payment for Review';}
+}
+async function savePaymentSettings(){
+  if(!currentProfile||currentProfile.role!=='admin'){showMessage('Admin access required.',true);return;}
+  const row={
+    bank_name:$('payBankName').value.trim()||null,account_holder:$('payAccountHolder').value.trim()||null,
+    account_number:$('payAccountNumber').value.trim()||null,ifsc_code:$('payIfsc').value.trim()||null,
+    branch_name:$('payBranch').value.trim()||null,upi_id:$('payUpi').value.trim()||null,
+    is_active:true,updated_by:currentUser.id
+  };
+  const btn=$('savePaymentSettingsBtn');btn.disabled=true;
+  try{
+    const {error:offError}=await db.from('payment_settings').update({is_active:false}).eq('is_active',true);
+    if(offError)throw offError;
+    const {error}=await db.from('payment_settings').insert(row);if(error)throw error;
+    showMessage('Payment instructions saved.');await loadActivationPanel();
+  }catch(e){showMessage('Could not save payment settings: '+e.message,true);}
+  finally{btn.disabled=false;}
+}
+async function loadAdminActivationQueue(){
+  if(!currentProfile||currentProfile.role!=='admin')return;
+  const target=$('adminActivationQueue');target.textContent='Loading requests...';
+  try{
+    const {data,error}=await db.from('activation_requests')
+      .select('id,member_id,payment_amount,utr_reference,status,submitted_at,profiles:profiles!activation_requests_member_id_fkey(member_id,full_name),membership_packages(package_name)')
+      .in('status',['pending','under_review','reupload_required']).order('submitted_at');
+    if(error)throw error;
+    target.replaceChildren();
+    if(!data||!data.length){target.textContent='No pending activation requests.';return;}
+    data.forEach(r=>{
+      const card=document.createElement('article');card.className='package';
+      const h=document.createElement('h3');h.textContent=r.profiles?.full_name||r.profiles?.member_id||'Member';
+      const p=document.createElement('p');p.textContent=`${r.profiles?.member_id||''} · ${r.membership_packages?.package_name||''} · ₹${Number(r.payment_amount).toLocaleString('en-IN')} · UTR ${r.utr_reference}`;
+      const row=document.createElement('div');row.className='actions';
+      const approve=document.createElement('button');approve.textContent='Approve & Activate';
+      approve.addEventListener('click',()=>reviewActivation(r.id,'approved'));
+      const reject=document.createElement('button');reject.className='danger';reject.textContent='Reject';
+      reject.addEventListener('click',()=>reviewActivation(r.id,'rejected'));
+      const reupload=document.createElement('button');reupload.className='secondary';reupload.textContent='Request Re-upload';
+      reupload.addEventListener('click',()=>reviewActivation(r.id,'reupload_required'));
+      row.append(approve,reject,reupload);card.append(h,p,row);target.append(card);
+    });
+  }catch(e){target.textContent='Could not load review queue: '+e.message;}
+}
+async function reviewActivation(id,decision){
+  if(!confirm(`Confirm ${decision.replace('_',' ')}?`))return;
+  const note=decision==='approved'?'Payment verified by admin.':decision==='rejected'?'Payment rejected by admin.':'Please provide a clearer payment receipt/reference.';
+  try{
+    const {error}=await db.rpc('admin_review_activation_request',{
+      p_request_id:id,p_decision:decision,p_review_notes:note
+    });
+    if(error)throw error;
+    showMessage('Activation request updated: '+decision+'.');
+    await loadAdminActivationQueue();
+  }catch(e){showMessage('Review failed: '+e.message,true);}
+}
 function bind(){
   $('headerBtn').addEventListener('click',()=>currentUser?logoutUser():showLogin());
   $('heroLoginBtn').addEventListener('click',showLogin);
@@ -369,8 +522,11 @@ function bind(){
   $('toLogin').addEventListener('click',showLogin);$('toRegister').addEventListener('click',showRegister);
   $('forgotBtn').addEventListener('click',resetPassword);
   $('logoutBtn').addEventListener('click',logoutUser);
+  $('activationForm').addEventListener('submit',submitActivation);
+  $('savePaymentSettingsBtn').addEventListener('click',savePaymentSettings);
+  $('refreshActivationQueueBtn').addEventListener('click',loadAdminActivationQueue);
   $('showPackageFormBtn').addEventListener('click',()=>{$('adminPackageForm').classList.remove('hidden');clearPackageForm();$('adminPackageForm').scrollIntoView({behavior:'smooth'});});
-  $('viewPackagesBtn').addEventListener('click',async()=>{$('adminPackageForm').classList.add('hidden');$('adminPackageListPanel').scrollIntoView({behavior:'smooth'});await loadAdminPackages();});
+  $('viewPackagesBtn').addEventListener('click',async()=>{$('adminPackageForm').classList.add('hidden');$('adminPackageListPanel').scrollIntoView({behavior:'smooth'});await loadAdminPackages();await loadAdminActivationQueue();});
   $('refreshAdminBtn').addEventListener('click',loadAdminPackages);
   $('savePackageBtn').addEventListener('click',savePackage);
   $('clearPackageBtn').addEventListener('click',clearPackageForm);
