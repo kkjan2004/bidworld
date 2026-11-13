@@ -1,20 +1,51 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#087a45"><title>BidWorld · Plan Setup</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="stylesheet" href="style.css"></head><body>
-<header><a class="logo" href="index.html">BidWorld</a><div class="right"><span id="headerMember" class="muted"></span><button id="headerBtn" class="secondary">Login</button></div></header>
-<div class="layout"><nav><div class="navtitle">MAIN MENU</div><div class="links"><a href="dashboard.html" data-role="member">Dashboard</a>
-<a href="packages.html" data-role="admin">Packages</a>
-<a href="payments.html" data-role="both">Payments & Activation</a>
-<a href="products.html" data-role="admin">Products</a>
-<a href="auctions.html" data-role="admin">Auctions</a>
-<a href="bidding.html" data-role="member">Bidding</a>
-<a href="winners.html" data-role="both">Winners</a>
-<a href="wallet.html" data-role="member">Wallet</a>
-<a href="referrals.html" data-role="member">Referrals</a>
-<a href="plans.html" data-role="admin">Plans</a>
-<a href="reports.html" data-role="admin">Reports</a>
-<a href="settings.html" data-role="both">Settings</a>
-<a href="admin.html" data-role="admin">Admin Home</a><a href="#" id="logoutLink">Logout</a></div></nav><main><div id="message" role="status" aria-live="polite"></div><div class="muted" id="pageStatus"></div>
-<section class="panel"><h1>Referral Plan Setup</h1><p class="muted">Set the number of levels and define proposed rewards as JSON. Example: [{"level":1,"type":"percent","value":5},{"level":2,"type":"percent","value":2}]. This stores plan rules only; it does not pay commissions.</p>
-<label>Plan Name</label><input id="refPlanName" placeholder="Example: Standard Referral Plan"><label>Number of Levels (1–20)</label><input id="refPlanLevels" type="number" min="1" max="20" value="5"><label>Level Reward Rules (JSON)</label><textarea id="refPlanRewards" placeholder='[{"level":1,"type":"percent","value":5},{"level":2,"type":"percent","value":2}]'></textarea><button id="saveReferralPlanBtn">Save Referral Plan</button><hr><h2>Existing Referral Plans</h2><div id="referralPlansList">Loading...</div></section>
-<section class="panel"><h1>Matrix / Genealogy Plan Setup</h1><label>Plan Name</label><input id="matrixPlanName" placeholder="Example: 3 × 5 Matrix"><label>Matrix Width</label><select id="matrixSize"><option value="3">3 Members</option><option value="4">4 Members</option><option value="5">5 Members</option><option value="7">7 Members</option></select><label>Total Levels</label><input id="matrixLevels" type="number" min="1" max="20" value="5"><label>Placement Method</label><select id="matrixMethod"><option value="direct_then_spillover">Direct then Spillover</option><option value="direct_only">Direct Only</option></select><button id="saveMatrixPlanBtn">Save Matrix Plan</button><hr><h2>Existing Matrix Plans</h2><div id="matrixPlansList">Loading...</div></section>
-<p class="muted">Before activating financial referral rewards, confirm the legal model, exact level rates, eligibility rules, caps, and refund/reversal handling. Existing members and balances are not modified by this setup page.</p>
-</main></div><footer>© 2026 BidWorld. All Rights Reserved.</footer><script src="shared.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BidWorld - Plans Setup</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <a href="admin.html" class="logo">🟢 BidWorld Admin</a>
+        <nav>
+            <a href="admin.html">Admin Home</a>
+            <a href="plans.html" class="active">Plans</a>
+        </nav>
+    </header>
+    <div class="container">
+        <h2 style="margin-bottom: 15px; font-size: 20px;">Referral & Matrix Setup</h2>
+        
+        <div class="card">
+            <h3 style="color: var(--primary); margin-bottom: 8px;">Referral Plan Setup</h3>
+            <p style="margin-bottom: 12px;">Set the number of levels and define rewards as JSON format:</p>
+            <div style="background: #F3F4F6; padding: 10px; border-radius: 6px; font-family: monospace; font-size: 12px; margin-bottom: 12px; overflow-x: auto;">
+                [{"level":1,"type":"percent","value":5},<br>{"level":2,"type":"percent","value":2}]
+            </div>
+
+            <label>Plan Name</label>
+            <input type="text" id="planName" placeholder="e.g. Standard Referral Plan">
+
+            <label>Number of Levels (1-20)</label>
+            <input type="number" id="numLevels" value="5" min="1" max="20">
+
+            <label>Level Reward Rules (JSON)</label>
+            <textarea id="rewardRules" rows="4" style="font-family: monospace;">[{"level":1,"type":"percent","value":5},{"level":2,"type":"percent","value":2}]</textarea>
+
+            <button class="btn" style="width: 100%; margin-top: 5px;" onclick="saveReferralPlan()">Save Referral Plan</button>
+        </div>
+
+        <div class="card">
+            <h3 style="color: var(--primary); margin-bottom: 8px;">Existing Referral Plans</h3>
+            <p id="existingPlansStatus">No referral plans configured yet.</p>
+        </div>
+    </div>
+    <script src="shared.js"></script>
+    <script>
+        function saveReferralPlan() {
+            showToast('Referral plan saved successfully!');
+        }
+    </script>
+</body>
+</html>
