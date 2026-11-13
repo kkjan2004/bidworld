@@ -37,3 +37,13 @@ LIMITATIONS / NEXT DEVELOPMENT:
 - Existing database RLS and RPC security remain essential. Front-end role hiding is
   only navigation/UI behavior and is not a substitute for database authorization.
 - Supabase-dependent actions require an internet connection.
+
+
+REFERRAL NETWORK UPGRADE
+- Added member dashboard cards for total downline and referral income credited.
+- Added member genealogy tree with level-wise counts.
+- Added admin Referral Plan and Matrix Plan setup page.
+- Added package form links to selected Referral Plan and Matrix Plan.
+- Added admin referral ledger reporting (recorded referral wallet credits only).
+- Run BidWorld_Referral_Network_Upgrade.sql in Supabase SQL Editor before uploading the updated website.
+IMPORTANT: Referral plan reward JSON is configuration only. This package does not automatically calculate or credit referral commissions. Do not represent the amounts as payable until the commission rules, legal review, and server-side payout workflow are approved and tested.
