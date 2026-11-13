@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#087a45"><title>BidWorld · Winners</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="stylesheet" href="style.css"></head><body>
+<header><a class="logo" href="index.html">BidWorld</a><div class="right"><span id="headerMember" class="muted"></span><button id="headerBtn" class="secondary">Login</button></div></header>
+<div class="layout"><nav><div class="navtitle">MAIN MENU</div><div class="links"><a href="dashboard.html" data-role="member">Dashboard</a>
+<a href="packages.html" data-role="admin">Packages</a>
+<a href="payments.html" data-role="both">Payments & Activation</a>
+<a href="products.html" data-role="admin">Products</a>
+<a href="auctions.html" data-role="admin">Auctions</a>
+<a href="bidding.html" data-role="member">Bidding</a>
+<a href="winners.html" data-role="both">Winners</a>
+<a href="wallet.html" data-role="member">Wallet</a>
+<a href="referrals.html" data-role="member">Referrals</a>
+<a href="reports.html" data-role="admin">Reports</a>
+<a href="settings.html" data-role="both">Settings</a>
+<a href="admin.html" data-role="admin">Admin Home</a><a href="#" id="logoutLink">Logout</a></div></nav>
+<main><div id="message" role="status" aria-live="polite"></div><div class="muted" id="pageStatus"></div>
+<section class="panel"><h1>Announced Winners</h1><div id="winnerAnnouncements">Loading...</div></section>
+<section class="panel admin-only"><h2>Winner Selection</h2><label>Auction</label><select id="winnerAuction"></select><label>Selection Method</label><select id="winnerMethod"><option value="random_draw">Random Draw (after auction ends)</option><option value="special_selection">Special Selection</option></select><label>Winning Ticket ID (Special Selection only)</label><input id="winnerTicket"><label>Selection Reason</label><textarea id="winnerReason"></textarea><button id="selectWinnerBtn">Select & Announce Winner</button></section>
+</main></div><footer>© 2026 BidWorld. All Rights Reserved.</footer>
+<script src="shared.js"></script></body></html>

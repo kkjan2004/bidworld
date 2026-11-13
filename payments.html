@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#087a45"><title>BidWorld · Payments & Activation</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="stylesheet" href="style.css"></head><body>
+<header><a class="logo" href="index.html">BidWorld</a><div class="right"><span id="headerMember" class="muted"></span><button id="headerBtn" class="secondary">Login</button></div></header>
+<div class="layout"><nav><div class="navtitle">MAIN MENU</div><div class="links"><a href="dashboard.html" data-role="member">Dashboard</a>
+<a href="packages.html" data-role="admin">Packages</a>
+<a href="payments.html" data-role="both">Payments & Activation</a>
+<a href="products.html" data-role="admin">Products</a>
+<a href="auctions.html" data-role="admin">Auctions</a>
+<a href="bidding.html" data-role="member">Bidding</a>
+<a href="winners.html" data-role="both">Winners</a>
+<a href="wallet.html" data-role="member">Wallet</a>
+<a href="referrals.html" data-role="member">Referrals</a>
+<a href="reports.html" data-role="admin">Reports</a>
+<a href="settings.html" data-role="both">Settings</a>
+<a href="admin.html" data-role="admin">Admin Home</a><a href="#" id="logoutLink">Logout</a></div></nav>
+<main><div id="message" role="status" aria-live="polite"></div><div class="muted" id="pageStatus"></div>
+<section class="panel"><h1>Membership Activation</h1><p class="muted">Select an active package, pay using official company details, and submit the UTR. Activation occurs only after admin review.</p><label>Select Membership Package</label><select id="activationPackage"></select><div class="item" id="paymentInstructions">Payment instructions loading...</div><form id="activationForm"><label>Bank UTR / UPI Reference Number</label><input id="activationUtr" maxlength="100" required placeholder="Enter exact payment reference"><button id="submitActivationBtn">Submit Payment for Review</button></form><h2>My Activation Requests</h2><div id="myActivationRequests">Loading...</div></section>
+<section class="panel admin-only"><h2>Admin Payment Instructions</h2><label>Bank Name</label><input id="payBankName"><label>Account Holder</label><input id="payAccountHolder"><label>Account Number</label><input id="payAccountNumber"><label>IFSC</label><input id="payIfsc"><label>Branch</label><input id="payBranch"><label>UPI ID</label><input id="payUpi"><button id="savePaymentSettingsBtn">Save Payment Instructions</button><hr><h2>Activation Review Queue</h2><button class="secondary" id="refreshActivationQueueBtn">Refresh Requests</button><div id="adminActivationQueue">Loading...</div></section>
+</main></div><footer>© 2026 BidWorld. All Rights Reserved.</footer>
+<script src="shared.js"></script></body></html>

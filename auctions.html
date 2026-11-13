@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#087a45"><title>BidWorld · Auction Management</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="stylesheet" href="style.css"></head><body>
+<header><a class="logo" href="index.html">BidWorld</a><div class="right"><span id="headerMember" class="muted"></span><button id="headerBtn" class="secondary">Login</button></div></header>
+<div class="layout"><nav><div class="navtitle">MAIN MENU</div><div class="links"><a href="dashboard.html" data-role="member">Dashboard</a>
+<a href="packages.html" data-role="admin">Packages</a>
+<a href="payments.html" data-role="both">Payments & Activation</a>
+<a href="products.html" data-role="admin">Products</a>
+<a href="auctions.html" data-role="admin">Auctions</a>
+<a href="bidding.html" data-role="member">Bidding</a>
+<a href="winners.html" data-role="both">Winners</a>
+<a href="wallet.html" data-role="member">Wallet</a>
+<a href="referrals.html" data-role="member">Referrals</a>
+<a href="reports.html" data-role="admin">Reports</a>
+<a href="settings.html" data-role="both">Settings</a>
+<a href="admin.html" data-role="admin">Admin Home</a><a href="#" id="logoutLink">Logout</a></div></nav>
+<main><div id="message" role="status" aria-live="polite"></div><div class="muted" id="pageStatus"></div>
+<section class="panel admin-only"><h1>Auction Management</h1><label>Product</label><select id="auctionProduct"></select><label>Auction Code</label><input id="auctionCode" placeholder="BW-AUC-001"><label>Start Date & Time</label><input id="auctionStart" type="datetime-local"><label>End Date & Time</label><input id="auctionEnd" type="datetime-local"><label>Starting Bid (₹)</label><input id="auctionStartingBid" type="number" min="0" step="0.01"><label>Bid Increment (₹)</label><input id="auctionIncrement" type="number" min="0.01" step="0.01"><button id="saveAuctionBtn">Create Auction</button><hr><h2>All Auctions</h2><div id="adminAuctions">Loading...</div></section>
+</main></div><footer>© 2026 BidWorld. All Rights Reserved.</footer>
+<script src="shared.js"></script></body></html>
