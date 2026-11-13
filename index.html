@@ -490,13 +490,11 @@ async function submitActivation(ev){
   if(!currentUser){showMessage('Please log in first.',true);return;}
   const packageId=$('activationPackage').value,utr=$('activationUtr').value.trim();
   if(!packageId||!utr){showMessage('Select a package and enter the UTR/reference number.',true);return;}
-  const {data:pkg,error:pe}=await db.from('membership_packages').select('package_price').eq('id',packageId).eq('status','active').single();
-  if(pe){showMessage(pe.message,true);return;}
+  if(utr.length<6){showMessage('Enter the complete bank UTR / UPI reference number.',true);return;}
   const btn=$('submitActivationBtn');btn.disabled=true;btn.textContent='Submitting...';
   try{
-    const {error}=await db.from('activation_requests').insert({
-      member_id:currentUser.id,package_id:packageId,payment_amount:pkg.package_price,
-      utr_reference:utr,status:'pending'
+    const {data,error}=await db.rpc('submit_activation_request',{
+      p_package_id:packageId,p_utr_reference:utr
     });
     if(error)throw error;
     $('activationUtr').value='';
@@ -515,9 +513,12 @@ async function savePaymentSettings(){
   };
   const btn=$('savePaymentSettingsBtn');btn.disabled=true;
   try{
-    const {error:offError}=await db.from('payment_settings').update({is_active:false}).eq('is_active',true);
-    if(offError)throw offError;
-    const {error}=await db.from('payment_settings').insert(row);if(error)throw error;
+    const {error}=await db.rpc('admin_save_payment_settings',{
+      p_bank_name:row.bank_name,p_account_holder:row.account_holder,
+      p_account_number:row.account_number,p_ifsc_code:row.ifsc_code,
+      p_branch_name:row.branch_name,p_upi_id:row.upi_id
+    });
+    if(error)throw error;
     showMessage('Payment instructions saved.');await loadActivationPanel();
   }catch(e){showMessage('Could not save payment settings: '+e.message,true);}
   finally{btn.disabled=false;}
@@ -536,20 +537,24 @@ async function loadAdminActivationQueue(){
       const card=document.createElement('article');card.className='package';
       const h=document.createElement('h3');h.textContent=r.profiles?.full_name||r.profiles?.member_id||'Member';
       const p=document.createElement('p');p.textContent=`${r.profiles?.member_id||''} · ${r.membership_packages?.package_name||''} · ₹${Number(r.payment_amount).toLocaleString('en-IN')} · UTR ${r.utr_reference}`;
+      const note=document.createElement('textarea');note.placeholder='Review note (required for rejection or re-upload)';note.maxLength=500;
       const row=document.createElement('div');row.className='actions';
       const approve=document.createElement('button');approve.textContent='Approve & Activate';
-      approve.addEventListener('click',()=>reviewActivation(r.id,'approved'));
+      approve.addEventListener('click',()=>reviewActivation(r.id,'approved',note.value.trim()));
       const reject=document.createElement('button');reject.className='danger';reject.textContent='Reject';
-      reject.addEventListener('click',()=>reviewActivation(r.id,'rejected'));
+      reject.addEventListener('click',()=>reviewActivation(r.id,'rejected',note.value.trim()));
       const reupload=document.createElement('button');reupload.className='secondary';reupload.textContent='Request Re-upload';
-      reupload.addEventListener('click',()=>reviewActivation(r.id,'reupload_required'));
-      row.append(approve,reject,reupload);card.append(h,p,row);target.append(card);
+      reupload.addEventListener('click',()=>reviewActivation(r.id,'reupload_required',note.value.trim()));
+      row.append(approve,reject,reupload);card.append(h,p,note,row);target.append(card);
     });
   }catch(e){target.textContent='Could not load review queue: '+e.message;}
 }
-async function reviewActivation(id,decision){
+async function reviewActivation(id,decision,note){
+  if((decision==='rejected'||decision==='reupload_required')&&!note){
+    showMessage('Please enter a reason in the review note field.',true);return;
+  }
+  if(!note)note='Payment verified by admin.';
   if(!confirm(`Confirm ${decision.replace('_',' ')}?`))return;
-  const note=decision==='approved'?'Payment verified by admin.':decision==='rejected'?'Payment rejected by admin.':'Please provide a clearer payment receipt/reference.';
   try{
     const {error}=await db.rpc('admin_review_activation_request',{
       p_request_id:id,p_decision:decision,p_review_notes:note
